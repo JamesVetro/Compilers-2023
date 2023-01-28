@@ -1,0 +1,19 @@
+{
+  "name": "compilers-2023",
+  "version": "1.0.0",
+  "description": "Compilers Project 2023",
+  "main": "index.js",
+  "scripts": {
+    "test": "build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesVetro/Compilers-2023.git"
+  },
+  "author": "James Vetro",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JamesVetro/Compilers-2023/issues"
+  },
+  "homepage": "https://github.com/JamesVetro/Compilers-2023#readme"
+}
