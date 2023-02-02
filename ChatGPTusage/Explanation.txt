@@ -1,0 +1,9 @@
+For this lab, on top of designing a compiler, I also wanted to do some exploration into AI tools for coding.
+The one I decided to use for this lab was ChatGPT, an OpenAI project.
+
+For the lab's use, I'm posting all logs of discussions between myself and the ChatGPT tool, as well as any code fragments
+it provides. 
+
+Obviously, all final code is developed independently, with just basics being asked of ChatGPT.
+ChatGPT is not designed to be able to actually complete this project, but it's interesting to see what kind of work it
+can do, given even the most basic questions.

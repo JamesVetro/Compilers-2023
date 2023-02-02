@@ -1,0 +1,127 @@
+For this log, I asked ChatGPT for the basics of a lexer, to see how developed it can make a base program. 
+
+
+        Question 1: "Can you design a lexer in typescript?"
+
+        Answer 1: Sure, here is a basic implementation of a lexer in TypeScript:
+
+        Code Snippet:
+
+                class Lexer {
+                private input: string;
+                private position: number;
+                private readonly tokens: Array<string>;
+
+                constructor(input: string) {
+                    this.input = input;
+                    this.position = 0;
+                    this.tokens = [];
+                }
+
+                public tokenize(): Array<string> {
+                    while (this.position < this.input.length) {
+                    const char = this.input[this.position];
+
+                    if (char === '(' || char === ')') {
+                        this.tokens.push(char);
+                        this.position++;
+                        continue;
+                    }
+
+                    throw new Error(`Unexpected character: ${char}`);
+                    }
+
+                    return this.tokens;
+                }
+                }
+
+
+        Answer 1 Continued: This is a very basic example that only tokenizes parentheses, but you could extend it to handle 
+                        more complex expressions by adding more cases in the tokenize method.
+
+
+
+From there, I decided to try to deepen it's response. The clear avenue for this was even given to me. It said you could
+extend the tokenizer. So my next query followed.
+
+     Question 2: "Can you expand upon the tokenize method?"
+
+        Answer 2: Certainly! Here is an expanded version of the tokenize method in the
+                  Lexer class that takes into account multiple token types:
+
+        Code Snippet:
+
+                public tokenize(): Array<Token> {
+                    while (this.position < this.input.length) {
+                        const char = this.input[this.position];
+
+                        if (char === '(') {
+                        this.tokens.push({ type: 'LEFT_PAREN', value: '(' });
+                        this.position++;
+                        continue;
+                        }
+
+                        if (char === ')') {
+                        this.tokens.push({ type: 'RIGHT_PAREN', value: ')' });
+                        this.position++;
+                        continue;
+                        }
+
+                        if (/\d/.test(char)) {
+                        const value = this.readNumber();
+                        this.tokens.push({ type: 'NUMBER', value });
+                        continue;
+                        }
+
+                        if (/[a-zA-Z]/.test(char)) {
+                        const value = this.readIdentifier();
+                        this.tokens.push({ type: 'IDENTIFIER', value });
+                        continue;
+                        }
+
+                        throw new Error(`Unexpected character: ${char}`);
+                    }
+
+                    this.tokens.push({ type: 'EOF', value: null });
+                    return this.tokens;
+                    }
+
+                    private readNumber(): string {
+                    let result = '';
+                    while (this.position < this.input.length && /\d/.test(this.input[this.position])) {
+                        result += this.input[this.position];
+                        this.position++;
+                    }
+                    return result;
+                    }
+
+                    private readIdentifier(): string {
+                    let result = '';
+                    while (this.position < this.input.length && /[a-zA-Z]/.test(this.input[this.position])) {
+                        result += this.input[this.position];
+                        this.position++;
+                    }
+                    return result;
+                }
+
+
+
+        Answer 2 Continued: In this version, the tokenize method uses regular expressions to determine the type of token 
+                        based on the current character. It also uses helper methods readNumber and readIdentifier to
+                        read sequences of characters and return them as a single token. The Token type is defined as:
+
+        Code Snippet (2):
+
+                type Token = {
+                    type: 'LEFT_PAREN' | 'RIGHT_PAREN' | 'NUMBER' | 'IDENTIFIER' | 'EOF',
+                    value: string | number | null
+                };
+
+        Answer 2 Continued: This is just one way to implement a lexer and can be extended further to support more 
+                            complex syntax.
+
+
+
+Obviously it's still missing most of the lexer's development, and many of the required tokens for our labs, but it's
+interesting how far it will actually go. From here, I will be developing on my own, I feel like any further development
+by ChatGPT would be stealing at this point.
