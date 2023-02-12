@@ -8,7 +8,7 @@
 
     export class Utils {
 
-    public static trim(str)      // Use a regular expression to remove leading and trailing spaces.
+    public static trim(str:string)      // Use a regular expression to remove leading and trailing spaces.
         {
             return str.replace(/^\s+ | \s+$/g, "");
             /* 
@@ -22,12 +22,12 @@
             
         }
 
-    public static rot13(str)    // An easy-to understand implementation of the famous and common Rot13 obfuscator.
+   /* public static rot13(str)    // An easy-to understand implementation of the famous and common Rot13 obfuscator.
         {                       // You can do this in three lines with a complex regular experssion, but I'd have
             var retVal = "";    // trouble explaining it in the future.  There's a lot to be said for obvious code.
             for (var i in str)
             {
-                var ch = str[i];
+                var ch = str.charAt(i);
                 var code = 0;
                 if ("abcedfghijklmABCDEFGHIJKLM".indexOf(ch) >= 0)
                 {            
@@ -45,6 +45,6 @@
                 }
             }
             return retVal;
-        }
+        }*/
     }
 }
