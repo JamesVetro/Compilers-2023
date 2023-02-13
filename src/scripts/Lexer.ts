@@ -2,17 +2,21 @@ module TSC {
   export class Lexer {
     public static lex() {
       {
-            
             var sourceCode = (<HTMLInputElement>document.getElementById("taSourceCode")).value;
               const lexer = new Lexers(sourceCode);
               (<HTMLInputElement>document.getElementById("taOutput")).value += "Lexing program "+1+"\n";
               let token = lexer.getNextToken();
               while (token.value !== "null") {
-                (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + token.type+" { "+token.value+" } FOUND AT POSITION: " +token.pos+" IN LINE:  "+token.line+"\n";
+                let checker = token.value;
+                if(token.value != "$"){
+                  (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + token.type+" { "+token.value+" } FOUND AT POSITION: " +token.pos+" IN LINE:  "+token.line+"\n";
+                }
                 token = lexer.getNextToken();
+                if(checker != "$" && token.value == "null"){ //makes sure there's an end of file note at the end of the whole set of programs.
+                  (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.WARNING+" NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.";
+                }
               }
             return sourceCode;
-            
         }
     }
   }
@@ -34,7 +38,8 @@ module TSC {
           EOF = 'EOF',
           COMMENT = 'COMMENT',
           ERROR = "ERROR",
-          NULL = "NULL"
+          NULL = "NULL",
+          WARNING = "WARNING"
         }
         
         class Token {
@@ -60,6 +65,7 @@ module TSC {
           pos: number;
           line: number;
           errorNum:number;
+          linePos:number;
           progNum:number;
           currentChar: string;
         
@@ -67,13 +73,15 @@ module TSC {
             this.text = text;
             this.pos = 0;
             this.errorNum = 0;
+            this.linePos = 0;
             this.progNum = 1;
             this.currentChar = this.text.charAt(this.pos);
             this.line = 0;
           }
         
-          advance() {
+          advance() { //moves forward to the next token
             this.pos += 1;
+            this.linePos++;
             if (this.pos > this.text.length - 1) {
               this.currentChar = "";
             } else {
@@ -81,100 +89,116 @@ module TSC {
             }
           }
         
-          skipWhitespace() {
+          skipWhitespace() { //simply deletes spaces for ease of use
             while (this.currentChar !== "" && this.currentChar === ' ') {
               this.advance();
+              this.linePos--;
             }
           }
         
-          isAlpha(ch: string) {
-            return /^[a-z]+$/i.test(ch);
+          isAlpha(ch: string) { //checks for lowercase letters
+            return /([a-z])+/g.test(ch);
           }
         
-          isDigit(ch: string) {
+          isDigit(ch: string) { //makes sure digits are really digits
             return /^\d$/.test(ch);
           }
   
-          AlphaSplitter(Block:string){
+          AlphaSplitter(Block:string){ //this cuts the aphabetical characters collected, and splits it into words
               Block = Block.toLowerCase();
               while(true){
                   let LockUp = Block.charAt(0)
+                  if(LockUp == ""){
+                    break;
+                  }
                   if(LockUp == "i"){
                       if(Block.charAt(1) == "n" && Block.charAt(2) == "t"){
-                          LockUp += Block.charAt(1) + Block.charAt(2)
-                          Block = Block.substring(3)
-                          return new Token(TokenType.INT, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                          LockUp += Block.charAt(1) + Block.charAt(2);
+                          Block = Block.substring(3);
+                          (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.INT+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                          LockUp = "";
                       }else if(Block.charAt(1)=="f"){
                           LockUp += Block.charAt(1)
-                          Block = Block.substring(2)
-                          return new Token(TokenType.IF, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                          Block = Block.substring(2);
+                          (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.IF+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                          LockUp = "";
                       }else{
-                          Block = Block.substring(1)
-                          return new Token(TokenType.VARIABLE, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                          Block = Block.substring(1);
+                          (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.VARIABLE+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                          LockUp = "";
                       }
                   }else if(LockUp == "t"&& Block.charAt(1) == "r"&& Block.charAt(2) == "u" && Block.charAt(3) == "e"){
                       LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3)
-                      Block = Block.substring(4)
-                      return new Token(TokenType.TRUE, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                      Block = Block.substring(4);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.TRUE+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = "";
                   }else if(LockUp == "f"&& Block.charAt(1) == "a"&& Block.charAt(2) == "l" && Block.charAt(3) == "s"&& Block.charAt(4) == "e"){
                       LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4)
-                      Block = Block.substring(5)
-                      return new Token(TokenType.FALSE, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);           
+                      Block = Block.substring(5);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.FALSE+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = "";           
                   }else if(LockUp == "s"&& Block.charAt(1) == "t"&& Block.charAt(2) == "r" && Block.charAt(3) == "i"&& Block.charAt(4) == "n"&& Block.charAt(5) == "g"){
                       LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4) + Block.charAt(5)
-                      Block = Block.substring(6)
-                      return new Token(TokenType.STRING, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);   
+                      Block = Block.substring(6);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.STRING+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = ""; 
                   }else if(LockUp == "p"&& Block.charAt(1) == "r"&& Block.charAt(2) == "i" && Block.charAt(3) == "n"&& Block.charAt(4) == "t"){
                       LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4)
-                      Block = Block.substring(5)
-                      return new Token(TokenType.PRINT, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                      Block = Block.substring(5);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.PRINT+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = "";
                   }else if(LockUp == "w"&& Block.charAt(1) == "h"&& Block.charAt(2) == "i" && Block.charAt(3) == "l"&& Block.charAt(4) == "e"){
                       LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4)
-                      Block = Block.substring(5)
-                      return new Token(TokenType.WHILE, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                      Block = Block.substring(5);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.WHILE+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = "";
                   }else if(LockUp == "b"&& Block.charAt(1) == "o"&& Block.charAt(2) == "o" && Block.charAt(3) == "l"&& Block.charAt(4) == "e"&& Block.charAt(5) == "a"&& Block.charAt(6) == "n"){
                       LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4) + Block.charAt(5) + Block.charAt(6)
-                      Block = Block.substring(7)
-                      return new Token(TokenType.BOOLEAN, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum); 
+                      Block = Block.substring(7);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.BOOLEAN+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = "";
                   }else{
-                      Block = Block.substring(1)
-                      return new Token(TokenType.VARIABLE, LockUp, this.pos - LockUp.length, this.line,this.errorNum,this.progNum);
+                      Block = Block.substring(1);
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.VARIABLE+" { "+LockUp+" } FOUND AT POSITION: " +(this.linePos - Block.length - LockUp.length)+" IN LINE:  "+this.line+"\n";
+                      LockUp = "";
                   }
               }
           }
         
           getNextToken() {
+            let stop = false;
             while (this.currentChar !== "") {
-              if (this.currentChar === ' ') {
+              if (this.currentChar === ' ') {//skipping whitespace
                 this.skipWhitespace();
                 continue;
               }
-              if (this.isAlpha(this.currentChar)) {
+              if (this.isAlpha(this.currentChar)) {//alphabetical character collection
                 let result = '';
                 while (this.isAlpha(this.currentChar)) {
                   result += this.currentChar;
                   this.advance();
                 }
-                return this.AlphaSplitter(result)
+                this.AlphaSplitter(result)
+                continue;
               }
-              if (this.isDigit(this.currentChar)) {
+              if (this.isDigit(this.currentChar)) { //numeric checker
                 let result = '';
                 while (this.isDigit(this.currentChar)) {
                   result += this.currentChar;
                   this.advance();
                 }
-                return new Token(TokenType.INTEGER, parseInt(result), this.pos - result.length, this.line,this.errorNum,this.progNum);
+                return new Token(TokenType.INTEGER, parseInt(result), this.linePos - result.length, this.line,this.errorNum,this.progNum);
               }
-              if (this.currentChar === '=') {
+              if (this.currentChar === '=') { //equals or double equals
                   let result = this.currentChar;
                   this.advance();
                   if (this.currentChar === '=') {
                     result += this.currentChar;
                     this.advance();
                   }
-                  return new Token(TokenType.OPERATOR, result, this.pos - result.length, this.line,this.errorNum,this.progNum);
+                  return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
-                if (this.currentChar === '!') {
+                if (this.currentChar === '!') {// not equals sign
                   let result = this.currentChar;
                   this.pos += 1;
                   if (this.pos > this.text.length - 1) {
@@ -182,23 +206,30 @@ module TSC {
                   } else {
                     this.currentChar = this.text.charAt(this.pos);
                   }
-                  if (this.currentChar === '=') {
+                  if (this.currentChar === '=') { //requires equals to work
                     result += this.currentChar;
                     this.advance();
+                    return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                   }
-                  return new Token(TokenType.OPERATOR, result, this.pos - result.length, this.line,this.errorNum,this.progNum);
+                  this.errorNum++;
+                  return new Token(TokenType.ERROR, result, this.linePos, this.line,this.errorNum,this.progNum);
                 }
-                if (this.currentChar === '(' || this.currentChar === ')') {
+                if (this.currentChar === '(' || this.currentChar === ')') { //parentheses checking
                   let result = this.currentChar;
                   this.advance();
-                  return new Token(TokenType.PAREN, result, this.pos - result.length, this.line,this.errorNum,this.progNum);
+                  return new Token(TokenType.PAREN, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
-                if (this.currentChar === '{' || this.currentChar === '}') {
+                if (this.currentChar === '{' || this.currentChar === '}') { //curly bracket checking
                   let result = this.currentChar;
                   this.advance();
-                  return new Token(TokenType.CURLY_BRACE, result, this.pos - result.length, this.line,this.errorNum,this.progNum);
+                  return new Token(TokenType.CURLY_BRACE, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
-                if (this.currentChar === '/') {
+                if (this.currentChar === '+') { //addition operator
+                  let result = this.currentChar;
+                  this.advance();
+                  return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                }
+                if (this.currentChar === '/') { //comment checking
                   let result = this.currentChar;
                   this.pos += 1;
                   if (this.pos > this.text.length - 1) {
@@ -219,7 +250,7 @@ module TSC {
                       comment += this.currentChar;
                       this.advance();
                     }
-                    if (this.currentChar === '*') {
+                    if (this.currentChar === '*') { //end comment checking
                       result += this.currentChar;
                       this.pos += 1;
                       if (this.pos > this.text.length - 1) {
@@ -231,11 +262,13 @@ module TSC {
                         result += this.currentChar;
                         this.advance();
                       }
+                    }else{
+                      (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.WARNING+" NON-TERMINATING COMMENT FOUND AT POSITION: " +this.linePos+" IN LINE:  "+this.line+"\n";
                     }
                     continue;
                   }
                 }
-                if(this.currentChar === '"'){
+                if(this.currentChar === '"'){ //quote handling
                   this.pos += 1;
                   if (this.pos > this.text.length - 1) {
                     this.currentChar = "";
@@ -243,25 +276,72 @@ module TSC {
                     this.currentChar = this.text.charAt(this.pos);
                   }
                   let quoteString:string = ""
-                    while (this.currentChar !== "" && !(this.currentChar === '"')) {
+                  stop = false;
+                    while (this.currentChar !== "" && !(this.currentChar === '"')) { //end quote checking
                         if (this.currentChar === ' ') {
                             this.skipWhitespace();
-                        }
-                        if(this.isAlpha(this.currentChar)){
+                            quoteString+=" ";
+                            continue;
+                            
+                        }else if(this.isAlpha(this.currentChar)){
                             quoteString += this.currentChar;
                             this.advance();
+                        }else if(this.currentChar == "$"){ //checks for end characters in a quote, ending it and giving warnings associated.
+                          this.pos += 1;
+                          if (this.pos > this.text.length - 1) {
+                            this.currentChar = "";
+                          } else {
+                            this.currentChar = this.text.charAt(this.pos);
+                          }
+                          (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.WARNING+' NON-TERMINATING STRING - "'+quoteString+'" FOUND AT POSITION: ' +this.linePos+" IN LINE: "+this.line+"\n";
+                          this.progNum++;
+                          (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.EOF+" { "+"$"+" } FOUND AT POSITION: " +this.linePos+" IN LINE:  "+this.line+"\n";
+                          if(this.errorNum == 0){
+                            (<HTMLInputElement>document.getElementById("taOutput")).value += "Lex completed with 0 errors. \n \n";
+                            if(this.currentChar != ""){
+                              (<HTMLInputElement>document.getElementById("taOutput")).value += "Lexing program "+this.progNum+"\n";
+                            }
+                            this.errorNum = 0;
+                          }else{
+                            (<HTMLInputElement>document.getElementById("taOutput")).value += "Lex FAILED with: "+this.errorNum+" errors. \n \n";
+                            this.errorNum = 0;
+                            if(this.currentChar != ""){
+                              (<HTMLInputElement>document.getElementById("taOutput")).value += "Lexing program "+this.progNum+"\n";
+                            }
+                          }
+                          stop = true;
+                          break;
+                        }else if(this.currentChar == "\n"){
+                          this.line++;
+                          this.skipWhitespace
+                          this.linePos = 0;
+                          (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.WARNING+' NON-TERMINATING STRING - "'+quoteString+'" FOUND AT POSITION: ' +this.linePos+" IN LINE: "+this.line+"\n";
+                          stop = true;
+                          break;
                         }else{
                             this.errorNum++;
-                            return new Token(TokenType.ERROR,quoteString, this.pos - quoteString.length, this.line,this.errorNum,this.progNum);
+                            quoteString += this.currentChar;
+                            (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.ERROR+" { "+this.currentChar+" } FOUND AT POSITION: " +this.linePos +" IN LINE:  "+this.line+"\n";
+                            this.advance();
+                            continue;
                         }
                     }
-                    return new Token(TokenType.STRING,quoteString, this.pos - quoteString.length, this.line,this.errorNum,this.progNum);
+                    this.advance();
+                    if(stop = false){
+                      return new Token(TokenType.STRING,quoteString, this.linePos - quoteString.length, this.line,this.errorNum,this.progNum);
+                    }
+                    stop = false;
+                    continue;
                 }
+                //simple newline implementation.
                 if(this.currentChar === '\n'){
                   this.line++;
                   this.advance();
+                  this.linePos = 0;
                   continue;
                 }
+
+                //END CHARACTER 
                 if(this.currentChar === '$'){
                   this.pos += 1;
                   if (this.pos > this.text.length - 1) {
@@ -270,14 +350,14 @@ module TSC {
                     this.currentChar = this.text.charAt(this.pos);
                   }
                   this.progNum++;
-                  (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + EOF+" { "+"$"+" } FOUND AT POSITION: " +this.pos+" IN LINE:  "+this.line+"\n";
-                  if(this.errorNum == 0){
+                  (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.EOF+" { "+"$"+" } FOUND AT POSITION: " +this.linePos+" IN LINE:  "+this.line+"\n";
+                  if(this.errorNum == 0){ //checks for errors, and if there are none, and there is another program after, starts the next
                     (<HTMLInputElement>document.getElementById("taOutput")).value += "Lex completed with 0 errors. \n \n";
                     if(this.currentChar != ""){
                       (<HTMLInputElement>document.getElementById("taOutput")).value += "Lexing program "+this.progNum+"\n";
                     }
                     this.errorNum = 0;
-                  }else{
+                  }else{ //if there are errors, they are called to attention here.
                     (<HTMLInputElement>document.getElementById("taOutput")).value += "Lex FAILED with: "+this.errorNum+" errors. \n \n";
                     this.errorNum = 0;
                     if(this.currentChar != ""){
@@ -285,16 +365,17 @@ module TSC {
                     }
                   }
                   
-                  continue;
+                  return new Token(TokenType.EOF, "$", this.linePos, this.line, this.errorNum, this.progNum)
                 }
-                else{
+                else{ //if it's other than these symbols it's an error
                   let errorval = this.currentChar
                   this.advance();
                   this.errorNum++;
-                  return new Token(TokenType.ERROR, errorval,this.pos,this.line,this.errorNum,this.progNum)
+                  return new Token(TokenType.ERROR, errorval,this.linePos,this.line,this.errorNum,this.progNum)
                 }
               }
-              return new Token(TokenType.NULL, "null",this.pos,this.line,this.errorNum,this.progNum)
+              //returns null 
+              return new Token(TokenType.NULL, "null",this.linePos,this.line,this.errorNum,this.progNum)
             }
           }
         }
