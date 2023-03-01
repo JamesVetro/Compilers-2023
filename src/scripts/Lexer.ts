@@ -33,9 +33,10 @@ module TSC {
           TRUE = 'TRUE',
           FALSE = 'FALSE',
           OPERATOR = 'OPERATOR',
-          PAREN = 'PAREN',
-          
-          CURLY_BRACE = 'CURLY_BRACE',
+          LPAREN = 'LPAREN',
+          RPAREN = 'RPAREN',
+          LCURLY = 'LCURLY',
+          RCURLY = 'RCURLY',
           EOF = 'EOF',
           COMMENT = 'COMMENT',
           ERROR = "ERROR",
@@ -215,15 +216,25 @@ module TSC {
                   this.errorNum++;
                   return new Token(TokenType.ERROR, result, this.linePos, this.line,this.errorNum,this.progNum);
                 }
-                if (this.currentChar === '(' || this.currentChar === ')') { //parentheses checking
+                if (this.currentChar === '(') { //parentheses checking
                   let result = this.currentChar;
                   this.advance();
-                  return new Token(TokenType.PAREN, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                  return new Token(TokenType.LPAREN, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
-                if (this.currentChar === '{' || this.currentChar === '}') { //curly bracket checking
+                if (this.currentChar === ')') { //parentheses checking
                   let result = this.currentChar;
                   this.advance();
-                  return new Token(TokenType.CURLY_BRACE, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                  return new Token(TokenType.RPAREN, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                }
+                if (this.currentChar === '{') { //curly bracket checking
+                  let result = this.currentChar;
+                  this.advance();
+                  return new Token(TokenType.LCURLY, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                }
+                if (this.currentChar === '}') { //curly bracket checking
+                  let result = this.currentChar;
+                  this.advance();
+                  return new Token(TokenType.RCURLY, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
                 if (this.currentChar === '+') { //addition operator
                   let result = this.currentChar;

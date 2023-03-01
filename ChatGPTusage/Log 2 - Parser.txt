@@ -1,0 +1,166 @@
+For this log, I asked ChatGPT for the basics of a parser, to see how developed it can make a base program.
+
+Question 1: "I have designed a typescript lexer, and now need to design a parser to continue.
+             Can you help me design a recursive descent parser, not using design programs such as Antlr?
+
+Answer 1: Certainly! A recursive descent parser is a type of top-down parser that uses a set of mutually recursive 
+            procedures to parse a given input. Here's an example of how you might go about designing one for your
+            TypeScript lexer:
+
+            1. Define the grammar: First, you need to define the grammar for the language you're parsing. 
+            The grammar is a set of rules that defines the syntax of the language. You can write the grammar in BNF 
+            (Backus-Naur Form) or EBNF (Extended Backus-Naur Form) notation. For TypeScript, the grammar can be found in 
+            the official TypeScript language specification.
+
+            2. Define the tokens: Next, you need to define the tokens that your lexer produces.
+            Tokens are the basic building blocks of the language, and they correspond to the terminal symbols 
+            in the grammar. Each token has a type and a value, which the parser will use to construct the syntax 
+            tree. You can define the tokens as a set of enum values, like this:
+
+Code Snippet:
+            enum TokenType {
+            // Keywords
+            FUNCTION = 'FUNCTION',
+            LET = 'LET',
+            // Operators
+            PLUS = 'PLUS',
+            MINUS = 'MINUS',
+            // ...
+            // Other tokens
+            IDENTIFIER = 'IDENTIFIER',
+            NUMBER = 'NUMBER',
+            EOF = 'EOF'
+            }
+
+            interface Token {
+            type: TokenType;
+            value: string;
+            }
+    
+Answer 1 cont.: 3. Write the parser: Once you have the grammar and the tokens, you can start writing the parser. 
+                The parser consists of a set of recursive functions, one for each non-terminal symbol in the 
+                grammar. Each function corresponds to a production rule in the grammar, and it calls other 
+                functions to parse the sub-expressions.
+                Here's an example of how you might write the parser for a simple expression grammar:
+
+Code Snippet 2:
+            function parseExpression(tokens: Token[]): ASTNode {
+            let node = parseTerm(tokens);
+            while (tokens.length > 0 && (tokens[0].type === TokenType.PLUS || tokens[0].type === TokenType.MINUS)) {
+                const operator = tokens.shift();
+                const right = parseTerm(tokens);
+                node = { type: operator.type, left: node, right: right };
+            }
+            return node;
+            }
+
+            function parseTerm(tokens: Token[]): ASTNode {
+            let node = parseFactor(tokens);
+            while (tokens.length > 0 && (tokens[0].type === TokenType.MULTIPLY || tokens[0].type === TokenType.DIVIDE)) {
+                const operator = tokens.shift();
+                const right = parseFactor(tokens);
+                node = { type: operator.type, left: node, right: right };
+            }
+            return node;
+            }
+
+            function parseFactor(tokens: Token[]): ASTNode {
+            if (tokens[0].type === TokenType.NUMBER) {
+                return { type: 'NUMBER_LITERAL', value: tokens.shift().value };
+            } else if (tokens[0].type === TokenType.IDENTIFIER) {
+                return { type: 'IDENTIFIER', name: tokens.shift().value };
+            } else if (tokens[0].type === TokenType.LEFT_PAREN) {
+                tokens.shift();
+                const node = parseExpression(tokens);
+                if (tokens[0].type !== TokenType.RIGHT_PAREN) {
+                throw new Error('Expected )');
+                }
+                tokens.shift();
+                return node;
+            } else {
+                throw new Error(`Unexpected token: ${tokens[0].type}`);
+            }
+            }
+
+Answer 1 cont.: 4. Build the AST: Finally, the parser will construct an abstract syntax tree (AST) that
+                represents the parsed input. The AST is a tree data structure that captures the structure 
+                of the program in a way that is easy to analyze and transform. You can define the AST as a 
+                set of interface types
+
+
+Here, ChatGPT ended it's response, but clearly it has more to say. As such, I asked it to simply continue. 
+
+Question 2: "Please continue"
+
+Answer 2: Here's an example of how you might define the AST types:
+
+Code Snippet:
+            interface ASTNode {
+                type: string;
+            }
+
+            interface BinaryOperatorNode extends ASTNode {
+                type: 'BINARY_OPERATOR';
+                operator: string;
+                left: ASTNode;
+                right: ASTNode;
+            }
+
+            interface NumberLiteralNode extends ASTNode {
+                type: 'NUMBER_LITERAL';
+                value: string;
+            }
+
+            interface IdentifierNode extends ASTNode {
+                type: 'IDENTIFIER';
+                name: string;
+            }
+
+Answer 2 cont.: And here's how you might modify the parser to build the AST:
+
+Code Snippet 2:
+            function parseExpression(tokens: Token[]): ASTNode {
+            let node = parseTerm(tokens);
+            while (tokens.length > 0 && (tokens[0].type === TokenType.PLUS || tokens[0].type === TokenType.MINUS)) {
+                const operator = tokens.shift();
+                const right = parseTerm(tokens);
+                node = { type: 'BINARY_OPERATOR', operator: operator.type, left: node, right: right };
+            }
+            return node;
+            }
+
+            function parseTerm(tokens: Token[]): ASTNode {
+            let node = parseFactor(tokens);
+            while (tokens.length > 0 && (tokens[0].type === TokenType.MULTIPLY || tokens[0].type === TokenType.DIVIDE)) {
+                const operator = tokens.shift();
+                const right = parseFactor(tokens);
+                node = { type: 'BINARY_OPERATOR', operator: operator.type, left: node, right: right };
+            }
+            return node;
+            }
+
+            function parseFactor(tokens: Token[]): ASTNode {
+            if (tokens[0].type === TokenType.NUMBER) {
+                return { type: 'NUMBER_LITERAL', value: tokens.shift().value };
+            } else if (tokens[0].type === TokenType.IDENTIFIER) {
+                return { type: 'IDENTIFIER', name: tokens.shift().value };
+            } else if (tokens[0].type === TokenType.LEFT_PAREN) {
+                tokens.shift();
+                const node = parseExpression(tokens);
+                if (tokens[0].type !== TokenType.RIGHT_PAREN) {
+                throw new Error('Expected )');
+                }
+                tokens.shift();
+                return node;
+            } else {
+                throw new Error(`Unexpected token: ${tokens[0].type}`);
+            }
+            }
+
+Answer 2 cont.: Now, when you call 'parseExpression' on a set of tokens, it will return an ASTNode that
+                represents the expression that was parsed. You can then use this AST to analyze or 
+                transform the program as needed.
+
+
+Obviously, it's response self terminated, but in all, it seems to have a good grasp on the subject, which is interesting.
+While not all of it's information fits, I'll definetly be using some of the basic outlines that ChatGPT has provided here.
