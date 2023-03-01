@@ -34,6 +34,7 @@ module TSC {
           FALSE = 'FALSE',
           OPERATOR = 'OPERATOR',
           PAREN = 'PAREN',
+          
           CURLY_BRACE = 'CURLY_BRACE',
           EOF = 'EOF',
           COMMENT = 'COMMENT',
