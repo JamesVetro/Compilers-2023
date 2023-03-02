@@ -18,7 +18,9 @@ var TSC;
                     token = lexer.getNextToken();
                     if (checker != "$" && token.value == "null") { //makes sure there's an end of file note at the end of the whole set of programs.
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.WARNING + " NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.";
+                        TSC.Parser.parse(TokenType.EOF, token.errorNum, token.progNum);
                     }
+                    TSC.Parser.parse(token.type, token.errorNum, token.progNum);
                 }
                 return sourceCode;
             }

@@ -7,6 +7,7 @@ module TSC {
               (<HTMLInputElement>document.getElementById("taOutput")).value += "Lexing program "+1+"\n";
               let token = lexer.getNextToken();
               while (token.value !== "null") {
+                
                 let checker = token.value;
                 if(token.value != "$"){
                   (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + token.type+" { "+token.value+" } FOUND AT POSITION: " +token.pos+" IN LINE:  "+token.line+"\n";
@@ -14,7 +15,9 @@ module TSC {
                 token = lexer.getNextToken();
                 if(checker != "$" && token.value == "null"){ //makes sure there's an end of file note at the end of the whole set of programs.
                   (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.WARNING+" NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.";
+                  Parser.parse(TokenType.EOF,token.errorNum,token.progNum);
                 }
+                Parser.parse(token.type,token.errorNum,token.progNum);
               }
             return sourceCode;
         }
