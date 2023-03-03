@@ -14,13 +14,13 @@ var TSC;
                     var checker = token.value;
                     if (token.value != "$") {
                         document.getElementById("taOutput").value += "LEXER - | " + token.type + " { " + token.value + " } FOUND AT POSITION: " + token.pos + " IN LINE:  " + token.line + "\n";
+                        TSC.Parser.parse(token.type, token.errorNum, token.progNum);
                     }
                     token = lexer.getNextToken();
                     if (checker != "$" && token.value == "null") { //makes sure there's an end of file note at the end of the whole set of programs.
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.WARNING + " NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.";
                         TSC.Parser.parse(TokenType.EOF, token.errorNum, token.progNum);
                     }
-                    TSC.Parser.parse(token.type, token.errorNum, token.progNum);
                 }
                 return sourceCode;
             }
@@ -28,29 +28,6 @@ var TSC;
         return Lexer;
     }());
     TSC.Lexer = Lexer;
-    var TokenType;
-    (function (TokenType) {
-        TokenType["INTEGER"] = "INTEGER";
-        TokenType["VARIABLE"] = "VARIABLE";
-        TokenType["PRINT"] = "PRINT";
-        TokenType["WHILE"] = "WHILE";
-        TokenType["IF"] = "IF";
-        TokenType["BOOLEAN"] = "BOOLEAN";
-        TokenType["INT"] = "INT";
-        TokenType["STRING"] = "STRING";
-        TokenType["TRUE"] = "TRUE";
-        TokenType["FALSE"] = "FALSE";
-        TokenType["OPERATOR"] = "OPERATOR";
-        TokenType["LPAREN"] = "LPAREN";
-        TokenType["RPAREN"] = "RPAREN";
-        TokenType["LCURLY"] = "LCURLY";
-        TokenType["RCURLY"] = "RCURLY";
-        TokenType["EOF"] = "EOF";
-        TokenType["COMMENT"] = "COMMENT";
-        TokenType["ERROR"] = "ERROR";
-        TokenType["NULL"] = "NULL";
-        TokenType["WARNING"] = "WARNING";
-    })(TokenType || (TokenType = {}));
     var Token = /** @class */ (function () {
         function Token(type, value, pos, line, errorNum, progNum) {
             this.type = type;
@@ -106,17 +83,20 @@ var TSC;
                         LockUp += Block.charAt(1) + Block.charAt(2);
                         Block = Block.substring(3);
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.INT + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                        TSC.Parser.parse(TokenType.INT, this.errorNum, this.progNum);
                         LockUp = "";
                     }
                     else if (Block.charAt(1) == "f") {
                         LockUp += Block.charAt(1);
                         Block = Block.substring(2);
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.IF + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                        TSC.Parser.parse(TokenType.IF, this.errorNum, this.progNum);
                         LockUp = "";
                     }
                     else {
                         Block = Block.substring(1);
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.VARIABLE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                        TSC.Parser.parse(TokenType.VARIABLE, this.errorNum, this.progNum);
                         LockUp = "";
                     }
                 }
@@ -124,41 +104,48 @@ var TSC;
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3);
                     Block = Block.substring(4);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.TRUE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.TRUE, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "f" && Block.charAt(1) == "a" && Block.charAt(2) == "l" && Block.charAt(3) == "s" && Block.charAt(4) == "e") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4);
                     Block = Block.substring(5);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.FALSE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.FALSE, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "s" && Block.charAt(1) == "t" && Block.charAt(2) == "r" && Block.charAt(3) == "i" && Block.charAt(4) == "n" && Block.charAt(5) == "g") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4) + Block.charAt(5);
                     Block = Block.substring(6);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.STRING + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.STRING, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "p" && Block.charAt(1) == "r" && Block.charAt(2) == "i" && Block.charAt(3) == "n" && Block.charAt(4) == "t") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4);
                     Block = Block.substring(5);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.PRINT + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.PRINT, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "w" && Block.charAt(1) == "h" && Block.charAt(2) == "i" && Block.charAt(3) == "l" && Block.charAt(4) == "e") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4);
                     Block = Block.substring(5);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.WHILE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.WHILE, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "b" && Block.charAt(1) == "o" && Block.charAt(2) == "o" && Block.charAt(3) == "l" && Block.charAt(4) == "e" && Block.charAt(5) == "a" && Block.charAt(6) == "n") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4) + Block.charAt(5) + Block.charAt(6);
                     Block = Block.substring(7);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.BOOLEAN + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.BOOLEAN, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else {
                     Block = Block.substring(1);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.VARIABLE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.VARIABLE, this.errorNum, this.progNum);
                     LockUp = "";
                 }
             }
@@ -310,10 +297,11 @@ var TSC;
                                 this.currentChar = this.text.charAt(this.pos);
                             }
                             document.getElementById("taOutput").value += "LEXER - | " + TokenType.WARNING + ' NON-TERMINATING STRING - "' + quoteString + '" FOUND AT POSITION: ' + this.linePos + " IN LINE: " + this.line + "\n";
-                            this.progNum++;
                             document.getElementById("taOutput").value += "LEXER - | " + TokenType.EOF + " { " + "$" + " } FOUND AT POSITION: " + this.linePos + " IN LINE:  " + this.line + "\n";
                             if (this.errorNum == 0) {
                                 document.getElementById("taOutput").value += "Lex completed with 0 errors. \n \n";
+                                TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                                this.progNum++;
                                 if (this.currentChar != "") {
                                     document.getElementById("taOutput").value += "Lexing program " + this.progNum + "\n";
                                 }
@@ -321,7 +309,9 @@ var TSC;
                             }
                             else {
                                 document.getElementById("taOutput").value += "Lex FAILED with: " + this.errorNum + " errors. \n \n";
+                                TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
                                 this.errorNum = 0;
+                                this.progNum++;
                                 if (this.currentChar != "") {
                                     document.getElementById("taOutput").value += "Lexing program " + this.progNum + "\n";
                                 }
@@ -368,10 +358,11 @@ var TSC;
                     else {
                         this.currentChar = this.text.charAt(this.pos);
                     }
-                    this.progNum++;
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.EOF + " { " + "$" + " } FOUND AT POSITION: " + this.linePos + " IN LINE:  " + this.line + "\n";
                     if (this.errorNum == 0) { //checks for errors, and if there are none, and there is another program after, starts the next
                         document.getElementById("taOutput").value += "Lex completed with 0 errors. \n \n";
+                        TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                        this.progNum++;
                         if (this.currentChar != "") {
                             document.getElementById("taOutput").value += "Lexing program " + this.progNum + "\n";
                         }
@@ -379,6 +370,8 @@ var TSC;
                     }
                     else { //if there are errors, they are called to attention here.
                         document.getElementById("taOutput").value += "Lex FAILED with: " + this.errorNum + " errors. \n \n";
+                        TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                        this.progNum++;
                         this.errorNum = 0;
                         if (this.currentChar != "") {
                             document.getElementById("taOutput").value += "Lexing program " + this.progNum + "\n";
