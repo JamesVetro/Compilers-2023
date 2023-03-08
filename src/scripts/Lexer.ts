@@ -187,6 +187,7 @@ module TSC {
                   if (this.currentChar === '=') {
                     result += this.currentChar;
                     this.advance();
+                    return new Token(TokenType.BOOLOP, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                   }
                   return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
@@ -201,7 +202,7 @@ module TSC {
                   if (this.currentChar === '=') { //requires equals to work
                     result += this.currentChar;
                     this.advance();
-                    return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                    return new Token(TokenType.BOOLOP, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                   }
                   this.errorNum++;
                   return new Token(TokenType.ERROR, result, this.linePos, this.line,this.errorNum,this.progNum);
@@ -229,7 +230,7 @@ module TSC {
                 if (this.currentChar === '+') { //addition operator
                   let result = this.currentChar;
                   this.advance();
-                  return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
+                  return new Token(TokenType.INTOP, result, this.linePos - result.length, this.line,this.errorNum,this.progNum);
                 }
                 if (this.currentChar === '/') { //comment checking
                   let result = this.currentChar;
@@ -334,7 +335,7 @@ module TSC {
                     }
                     this.advance();
                     if(stop = false){
-                      return new Token(TokenType.STRING,quoteString, this.linePos - quoteString.length, this.line,this.errorNum,this.progNum);
+                      return new Token(TokenType.STRING,'"'+quoteString+'"', this.linePos - quoteString.length, this.line,this.errorNum,this.progNum);
                     }
                     stop = false;
                     continue;
