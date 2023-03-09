@@ -14,12 +14,12 @@ var TSC;
                     var checker = token.value;
                     if (token.value != "$") {
                         document.getElementById("taOutput").value += "LEXER - | " + token.type + " { " + token.value + " } FOUND AT POSITION: " + token.pos + " IN LINE:  " + token.line + "\n";
-                        TSC.Parser.parse(token.type, token.errorNum, token.progNum);
+                        TSC.Parser.parse(token.type, token.value, token.line, token.errorNum, token.progNum);
                     }
                     token = lexer.getNextToken();
                     if (checker != "$" && token.value == "null") { //makes sure there's an end of file note at the end of the whole set of programs.
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.WARNING + " NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.";
-                        TSC.Parser.parse(TokenType.EOF, token.errorNum, token.progNum);
+                        TSC.Parser.parse(token.type, token.value, token.line, token.errorNum, token.progNum);
                     }
                 }
                 return sourceCode;
@@ -83,20 +83,20 @@ var TSC;
                         LockUp += Block.charAt(1) + Block.charAt(2);
                         Block = Block.substring(3);
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.INT + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                        TSC.Parser.parse(TokenType.INT, this.errorNum, this.progNum);
+                        TSC.Parser.parse(TokenType.INT, LockUp, this.line, this.errorNum, this.progNum);
                         LockUp = "";
                     }
                     else if (Block.charAt(1) == "f") {
                         LockUp += Block.charAt(1);
                         Block = Block.substring(2);
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.IF + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                        TSC.Parser.parse(TokenType.IF, this.errorNum, this.progNum);
+                        TSC.Parser.parse(TokenType.IF, LockUp, this.line, this.errorNum, this.progNum);
                         LockUp = "";
                     }
                     else {
                         Block = Block.substring(1);
                         document.getElementById("taOutput").value += "LEXER - | " + TokenType.VARIABLE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                        TSC.Parser.parse(TokenType.VARIABLE, this.errorNum, this.progNum);
+                        TSC.Parser.parse(TokenType.VARIABLE, LockUp, this.line, this.errorNum, this.progNum);
                         LockUp = "";
                     }
                 }
@@ -104,48 +104,48 @@ var TSC;
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3);
                     Block = Block.substring(4);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.TRUE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.TRUE, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.TRUE, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "f" && Block.charAt(1) == "a" && Block.charAt(2) == "l" && Block.charAt(3) == "s" && Block.charAt(4) == "e") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4);
                     Block = Block.substring(5);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.FALSE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.FALSE, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.FALSE, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "s" && Block.charAt(1) == "t" && Block.charAt(2) == "r" && Block.charAt(3) == "i" && Block.charAt(4) == "n" && Block.charAt(5) == "g") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4) + Block.charAt(5);
                     Block = Block.substring(6);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.STRING + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.STRING, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.STRING, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "p" && Block.charAt(1) == "r" && Block.charAt(2) == "i" && Block.charAt(3) == "n" && Block.charAt(4) == "t") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4);
                     Block = Block.substring(5);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.PRINT + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.PRINT, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.PRINT, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "w" && Block.charAt(1) == "h" && Block.charAt(2) == "i" && Block.charAt(3) == "l" && Block.charAt(4) == "e") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4);
                     Block = Block.substring(5);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.WHILE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.WHILE, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.WHILE, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else if (LockUp == "b" && Block.charAt(1) == "o" && Block.charAt(2) == "o" && Block.charAt(3) == "l" && Block.charAt(4) == "e" && Block.charAt(5) == "a" && Block.charAt(6) == "n") {
                     LockUp += Block.charAt(1) + Block.charAt(2) + Block.charAt(3) + Block.charAt(4) + Block.charAt(5) + Block.charAt(6);
                     Block = Block.substring(7);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.BOOLEAN + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.BOOLEAN, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.BOOLEAN, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
                 else {
                     Block = Block.substring(1);
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.VARIABLE + " { " + LockUp + " } FOUND AT POSITION: " + (this.linePos - Block.length - LockUp.length) + " IN LINE:  " + this.line + "\n";
-                    TSC.Parser.parse(TokenType.VARIABLE, this.errorNum, this.progNum);
+                    TSC.Parser.parse(TokenType.VARIABLE, LockUp, this.line, this.errorNum, this.progNum);
                     LockUp = "";
                 }
             }
@@ -180,6 +180,7 @@ var TSC;
                     if (this.currentChar === '=') {
                         result += this.currentChar;
                         this.advance();
+                        return new Token(TokenType.BOOLOP, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                     }
                     return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
@@ -195,7 +196,7 @@ var TSC;
                     if (this.currentChar === '=') { //requires equals to work
                         result += this.currentChar;
                         this.advance();
-                        return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
+                        return new Token(TokenType.BOOLOP, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                     }
                     this.errorNum++;
                     return new Token(TokenType.ERROR, result, this.linePos, this.line, this.errorNum, this.progNum);
@@ -223,7 +224,7 @@ var TSC;
                 if (this.currentChar === '+') { //addition operator
                     var result = this.currentChar;
                     this.advance();
-                    return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
+                    return new Token(TokenType.INTOP, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '/') { //comment checking
                     var result = this.currentChar;
@@ -300,7 +301,7 @@ var TSC;
                             document.getElementById("taOutput").value += "LEXER - | " + TokenType.EOF + " { " + "$" + " } FOUND AT POSITION: " + this.linePos + " IN LINE:  " + this.line + "\n";
                             if (this.errorNum == 0) {
                                 document.getElementById("taOutput").value += "Lex completed with 0 errors. \n \n";
-                                TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                                TSC.Parser.parse(TokenType.EOF, "$", this.line, this.errorNum, this.progNum);
                                 this.progNum++;
                                 if (this.currentChar != "") {
                                     document.getElementById("taOutput").value += "Lexing program " + this.progNum + "\n";
@@ -309,7 +310,7 @@ var TSC;
                             }
                             else {
                                 document.getElementById("taOutput").value += "Lex FAILED with: " + this.errorNum + " errors. \n \n";
-                                TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                                TSC.Parser.parse(TokenType.EOF, "$", this.line, this.errorNum, this.progNum);
                                 this.errorNum = 0;
                                 this.progNum++;
                                 if (this.currentChar != "") {
@@ -337,7 +338,7 @@ var TSC;
                     }
                     this.advance();
                     if (stop = false) {
-                        return new Token(TokenType.STRING, quoteString, this.linePos - quoteString.length, this.line, this.errorNum, this.progNum);
+                        return new Token(TokenType.STRING, '"' + quoteString + '"', this.linePos - quoteString.length, this.line, this.errorNum, this.progNum);
                     }
                     stop = false;
                     continue;
@@ -361,7 +362,7 @@ var TSC;
                     document.getElementById("taOutput").value += "LEXER - | " + TokenType.EOF + " { " + "$" + " } FOUND AT POSITION: " + this.linePos + " IN LINE:  " + this.line + "\n";
                     if (this.errorNum == 0) { //checks for errors, and if there are none, and there is another program after, starts the next
                         document.getElementById("taOutput").value += "Lex completed with 0 errors. \n \n";
-                        TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                        TSC.Parser.parse(TokenType.EOF, "$", this.line, this.errorNum, this.progNum);
                         this.progNum++;
                         if (this.currentChar != "") {
                             document.getElementById("taOutput").value += "Lexing program " + this.progNum + "\n";
@@ -370,7 +371,7 @@ var TSC;
                     }
                     else { //if there are errors, they are called to attention here.
                         document.getElementById("taOutput").value += "Lex FAILED with: " + this.errorNum + " errors. \n \n";
-                        TSC.Parser.parse(TokenType.EOF, this.errorNum, this.progNum);
+                        TSC.Parser.parse(TokenType.EOF, "$", this.line, this.errorNum, this.progNum);
                         this.progNum++;
                         this.errorNum = 0;
                         if (this.currentChar != "") {

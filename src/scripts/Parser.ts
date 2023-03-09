@@ -8,12 +8,16 @@ module TSC {
             if(inToken == TokenType.EOF){
                 listLen = tokenList.push([inToken,tokenValue,lineNum]);
                 if(lexError == 0){
-                    (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parsing program "+progNum+": \n"; 
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parsing program "+progNum+": \n\n"; 
                     parseProgram(progNum);
                     tokenList = [];
+                    parseError = 0;
+                    laterTokens = [];
                 }else{
                     (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Skipped due to LEXER Errors \n \nCST for program "+progNum+ ": Skipped due to LEXER errors\n\n"; 
                     tokenList = [];
+                    parseError = 0;
+                    laterTokens = [];
                 }
             }else{
                 listLen = tokenList.push([inToken,tokenValue]);
@@ -22,15 +26,15 @@ module TSC {
     } 
 
     function parseProgram(progNum:number){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseProgram() \n"; 
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseProgram() \n"; 
         parseBlock();
         matchToken(TokenType.EOF);
         if(parseError == 0){
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parse Completed Successfully \n \n "; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n PARSER - | Parse Completed Successfully \n \n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
             //CST IS RUN HERE
         }else{
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parse Failed with "+parseError +"errors.\n \n "; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parse Failed with "+parseError +" error(s).\n \n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+":Skipped due to PARSER errors.\n \n";
         }
 
@@ -38,7 +42,7 @@ module TSC {
     }
 
     function parseBlock(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseBlock() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseBlock() \n";
         matchToken(TokenType.LCURLY);
         parseStatementList();
         matchToken(TokenType.RCURLY);
@@ -46,9 +50,9 @@ module TSC {
 
 
     function parseStatementList(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseStatementList() \n";
-        parseStatement();
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseStatementList() \n";
         if (nextToken() != TokenType.RCURLY){
+            parseStatement();
             parseStatementList();
         }
         else{
@@ -57,7 +61,7 @@ module TSC {
     }
 
     function parseStatement(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseStatement() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseStatement() \n";
        if(nextToken() == TokenType.PRINT){
         parsePrintStatement();
        }else if(nextToken() == TokenType.VARIABLE){
@@ -71,14 +75,14 @@ module TSC {
        }else if(nextToken() == TokenType.LCURLY){
         parseBlock();
        }else{
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER ERROR - | Expected a statement start (PRINT, a variable, IF, WHILE, variable declaration, or left curly bracket), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER ERROR - | Expected a statement start (PRINT, a variable, IF, WHILE, variable declaration, or left curly bracket), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
         laterTokens.push(tokenList[0]);
         tokenList.shift();
        }
     }
 
     function parsePrintStatement(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parsePrintStatement() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parsePrintStatement() \n";
         matchToken(TokenType.PRINT);
         matchToken(TokenType.LPAREN);
         parseExpr();
@@ -86,14 +90,14 @@ module TSC {
     }
 
     function parseAssignmentStatement(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseAssignmentStatement() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseAssignmentStatement() \n";
         matchToken(TokenType.VARIABLE);
         matchToken(TokenType.OPERATOR);
         parseExpr();
     }
     
     function parseVarDecl(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseVarDecl() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseVarDecl() \n";
         if(nextToken() == TokenType.INT){
             matchToken(TokenType.INT);
         }else if(nextToken() == TokenType.STRING){
@@ -107,21 +111,21 @@ module TSC {
     }
 
     function parseWhileStatement(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseWhileStatement() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseWhileStatement() \n";
         matchToken(TokenType.WHILE);
         parseBooleanExpr();
         parseBlock();
     }
     
     function parseIfStatement(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseIfStatement() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseIfStatement() \n";
         matchToken(TokenType.IF);
         parseBooleanExpr();
         parseBlock();
     }
         
     function parseBooleanExpr(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseBooleanExpr() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseBooleanExpr() \n";
         if (nextToken() == TokenType.LPAREN){
             matchToken(TokenType.LPAREN);
             parseExpr();
@@ -136,7 +140,7 @@ module TSC {
     }
 
     function parseExpr(){
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseExpr() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseExpr() \n";
         if(nextToken() == TokenType.INTEGER){
             parseIntExpr();
         }else if(nextToken() == TokenType.STRING){
@@ -147,14 +151,14 @@ module TSC {
             matchToken(TokenType.VARIABLE)
         }else{
             parseError++;
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER ERROR - | Expected an expression start (an integer, a string, a left paren, or a variable), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER ERROR - | Expected an expression start (an integer, a string, a left paren, or a variable), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
     }
 
     function parseIntExpr() {
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | parseIntExpr() \n";
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parseIntExpr() \n";
         matchToken(TokenType.INTEGER);
         matchToken(TokenType.INTOP);
         parseExpr();
@@ -167,12 +171,11 @@ module TSC {
 
     function matchToken(checkValue:TokenType){
         if(checkValue == tokenList[0][0]){
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | matchToken("+tokenList[0][1]+") \n";
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }else{
             parseError++;
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER ERROR - | Expected: "+checkValue+", and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER ERROR - | Expected: "+checkValue+", and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
