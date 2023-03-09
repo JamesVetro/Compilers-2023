@@ -105,9 +105,7 @@ module TSC {
         }else if(nextToken() == TokenType.BOOLEAN){
             matchToken(TokenType.BOOLEAN);
         }
-        if (nextToken() == TokenType.VARIABLE){
-            matchToken(TokenType.VARIABLE)
-        }
+        matchToken(TokenType.VARIABLE)
     }
 
     function parseWhileStatement(){

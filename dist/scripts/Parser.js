@@ -112,9 +112,7 @@ var TSC;
         else if (nextToken() == TokenType.BOOLEAN) {
             matchToken(TokenType.BOOLEAN);
         }
-        if (nextToken() == TokenType.VARIABLE) {
-            matchToken(TokenType.VARIABLE);
-        }
+        matchToken(TokenType.VARIABLE);
     }
     function parseWhileStatement() {
         document.getElementById("taOutput").value += "PARSER - | parseWhileStatement() \n";
