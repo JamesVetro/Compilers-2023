@@ -38,7 +38,7 @@ module TSC {
         }
 
         public printCST(node: CSTNode, indent = ""){
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST --> | " + indent + "<" + node.value + ">" + "\n";
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "  CST --> | " + indent + "<" + node.value + ">" + "\n";
             for (const child of node.children) {
                 this.printCST(child, indent + "-");
             }
