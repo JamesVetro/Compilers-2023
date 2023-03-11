@@ -8,12 +8,12 @@ module TSC {
             if(inToken == TokenType.EOF){
                 listLen = tokenList.push([inToken,tokenValue,lineNum]);
                 if(lexError == 0){
-                    (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parsing program "+progNum+": \n\n"; 
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "\n\nPARSER - | Parsing program "+progNum+": \n\n"; 
                     parseProgram(progNum);
                     tokenList = [];
                     parseError = 0;
                 }else{
-                    (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Skipped due to LEXER Errors \n \nCST for program "+progNum+ ": Skipped due to LEXER errors\n\n"; 
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "\n\nPARSER - | Skipped due to LEXER Errors\n\nCST for program "+progNum+ ": Skipped due to LEXER errors\n\n"; 
                     tokenList = [];
                     parseError = 0;
                 }
@@ -30,12 +30,12 @@ module TSC {
         matchToken(TokenType.EOF);
         _CST.moveUp();
         if(parseError == 0){
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n PARSER - | Parse Completed Successfully \n \n"; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "\nPARSER - | Parse Completed Successfully \n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
             _CST.printCST(_CST.getRootNode());
         }else{
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n \nPARSER - | Parse Failed with "+parseError +" error(s).\n \n"; 
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+":Skipped due to PARSER errors.\n \n";
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "\n\nPARSER - | Parse Failed with "+parseError +" error(s).\n\n"; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+":Skipped due to PARSER errors.\n\n";
         }
 
         
