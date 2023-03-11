@@ -26,6 +26,8 @@ var TokenType;
     TokenType["TRUE"] = "TRUE";
     TokenType["FALSE"] = "FALSE";
     TokenType["OPERATOR"] = "OPERATOR";
+    TokenType["CHARLIST"] = "CHARLIST";
+    TokenType["QMARK"] = "QMARK";
     TokenType["BOOLOP"] = "BOOLOP";
     TokenType["INTOP"] = "INTOP";
     TokenType["LPAREN"] = "LPAREN";

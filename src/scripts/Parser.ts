@@ -166,8 +166,8 @@ module TSC {
         if(nextToken() == TokenType.INTEGER){
             parseIntExpr();
            _CST.moveUp();
-        }else if(nextToken() == TokenType.STRING){
-            matchToken(TokenType.STRING)
+        }else if(nextToken() == TokenType.QMARK){
+            parseStringExpr();
            _CST.moveUp();
         }else if(nextToken() == TokenType.LPAREN){
             parseBooleanExpr();
@@ -181,6 +181,15 @@ module TSC {
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
+    }
+
+    function parseStringExpr(){
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | parsestringExpr() \n";
+        _CST.addNode({name: "stringExpr", parent:_CST.getCurrentNode(), children: [], value: "stringExpr"});
+        matchToken(TokenType.QMARK);
+        matchToken(TokenType.CHARLIST);
+        matchToken(TokenType.QMARK);
+       _CST.moveUp();
     }
 
     function parseIntExpr() {
@@ -200,8 +209,9 @@ module TSC {
     function matchToken(checkValue:TokenType){
         if(checkValue == tokenList[0][0]){
             laterTokens.push(tokenList[0]);
-           _CST.addNode({name: checkValue, parent:_CST.getCurrentNode(), children: [], value: tokenList[0][1]});
+            _CST.addNode({name: checkValue, parent:_CST.getCurrentNode(), children: [], value: tokenList[0][1]});
             tokenList.shift();
+            _CST.moveUp();
         }else{
             parseError++;
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER ERROR - | Expected: "+checkValue+", and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 

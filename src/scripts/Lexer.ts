@@ -280,7 +280,7 @@ module TSC {
                   }
                   let quoteString:string = ""
                   stop = false;
-                    while (this.currentChar !== "" && !(this.currentChar === '"')) { //end quote checking
+                    while (this.currentChar !== "" && this.currentChar !== '"') { //end quote checking
                         if (this.currentChar === ' ') {
                             this.skipWhitespace();
                             quoteString+=" ";
@@ -289,6 +289,7 @@ module TSC {
                         }else if(this.isAlpha(this.currentChar)){
                             quoteString += this.currentChar;
                             this.advance();
+                            continue
                         }else if(this.currentChar == "$"){ //checks for end characters in a quote, ending it and giving warnings associated.
                           this.pos += 1;
                           if (this.pos > this.text.length - 1) {
@@ -334,10 +335,12 @@ module TSC {
                         }
                     }
                     this.advance();
-                    if(stop = false){
-                      return new Token(TokenType.STRING,'"'+quoteString+'"', this.linePos - quoteString.length, this.line,this.errorNum,this.progNum);
-                    }
-                    stop = false;
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.QMARK+" { "+'"'+" } FOUND AT POSITION: " +this.linePos+" IN LINE:  "+this.line+"\n";
+                    Parser.parse(TokenType.QMARK,'"',this.line,this.errorNum,this.progNum);
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.CHARLIST+" { "+quoteString+" } FOUND AT POSITION: " +(this.linePos - quoteString.length)+" IN LINE:  "+this.line+"\n";
+                    Parser.parse(TokenType.CHARLIST,quoteString,this.line,this.errorNum,this.progNum);
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "LEXER - | " + TokenType.QMARK+" { "+'"'+" } FOUND AT POSITION: " +this.linePos+" IN LINE:  "+this.line+"\n";
+                    Parser.parse(TokenType.QMARK,'"',this.line,this.errorNum,this.progNum);
                     continue;
                 }
                 //simple newline implementation.

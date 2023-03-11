@@ -172,8 +172,8 @@ var TSC;
             parseIntExpr();
             _CST.moveUp();
         }
-        else if (nextToken() == TokenType.STRING) {
-            matchToken(TokenType.STRING);
+        else if (nextToken() == TokenType.QMARK) {
+            parseStringExpr();
             _CST.moveUp();
         }
         else if (nextToken() == TokenType.LPAREN) {
@@ -190,6 +190,14 @@ var TSC;
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
+    }
+    function parseStringExpr() {
+        document.getElementById("taOutput").value += "PARSER - | parsestringExpr() \n";
+        _CST.addNode({ name: "stringExpr", parent: _CST.getCurrentNode(), children: [], value: "stringExpr" });
+        matchToken(TokenType.QMARK);
+        matchToken(TokenType.CHARLIST);
+        matchToken(TokenType.QMARK);
+        _CST.moveUp();
     }
     function parseIntExpr() {
         document.getElementById("taOutput").value += "PARSER - | parseIntExpr() \n";
@@ -208,6 +216,7 @@ var TSC;
             laterTokens.push(tokenList[0]);
             _CST.addNode({ name: checkValue, parent: _CST.getCurrentNode(), children: [], value: tokenList[0][1] });
             tokenList.shift();
+            _CST.moveUp();
         }
         else {
             parseError++;

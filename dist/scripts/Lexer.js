@@ -279,7 +279,7 @@ var TSC;
                     }
                     var quoteString = "";
                     stop = false;
-                    while (this.currentChar !== "" && !(this.currentChar === '"')) { //end quote checking
+                    while (this.currentChar !== "" && this.currentChar !== '"') { //end quote checking
                         if (this.currentChar === ' ') {
                             this.skipWhitespace();
                             quoteString += " ";
@@ -288,6 +288,7 @@ var TSC;
                         else if (this.isAlpha(this.currentChar)) {
                             quoteString += this.currentChar;
                             this.advance();
+                            continue;
                         }
                         else if (this.currentChar == "$") { //checks for end characters in a quote, ending it and giving warnings associated.
                             this.pos += 1;
@@ -337,10 +338,12 @@ var TSC;
                         }
                     }
                     this.advance();
-                    if (stop = false) {
-                        return new Token(TokenType.STRING, '"' + quoteString + '"', this.linePos - quoteString.length, this.line, this.errorNum, this.progNum);
-                    }
-                    stop = false;
+                    document.getElementById("taOutput").value += "LEXER - | " + TokenType.QMARK + " { " + '"' + " } FOUND AT POSITION: " + this.linePos + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.QMARK, '"', this.line, this.errorNum, this.progNum);
+                    document.getElementById("taOutput").value += "LEXER - | " + TokenType.CHARLIST + " { " + quoteString + " } FOUND AT POSITION: " + (this.linePos - quoteString.length) + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.CHARLIST, quoteString, this.line, this.errorNum, this.progNum);
+                    document.getElementById("taOutput").value += "LEXER - | " + TokenType.QMARK + " { " + '"' + " } FOUND AT POSITION: " + this.linePos + " IN LINE:  " + this.line + "\n";
+                    TSC.Parser.parse(TokenType.QMARK, '"', this.line, this.errorNum, this.progNum);
                     continue;
                 }
                 //simple newline implementation.
