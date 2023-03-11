@@ -11,6 +11,7 @@ var TSC;
                 currentNode = currentNode.parent;
             }
         };
+        //Adds nodes to the tree
         CST.prototype.addNode = function (node) {
             if (node.parent == null) {
                 node.name = "goal";
@@ -33,6 +34,7 @@ var TSC;
         CST.prototype.getRootNode = function () {
             return rootNode;
         };
+        //prints the final cst, adding "-"" for each child
         CST.prototype.printCST = function (node, indent) {
             if (indent === void 0) { indent = ""; }
             document.getElementById("taOutput").value += "  CST --> | " + indent + "<" + node.value + ">" + "\n";

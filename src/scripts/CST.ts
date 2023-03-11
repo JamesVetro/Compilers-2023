@@ -13,6 +13,7 @@ module TSC {
                 currentNode = currentNode.parent;
               }
         }
+        //Adds nodes to the tree
         public addNode(node: CSTNode) {
             if (node.parent == null) {
                 node.name = "goal";
@@ -36,7 +37,7 @@ module TSC {
         public getRootNode(){
             return rootNode;
         }
-
+//prints the final cst, adding "-"" for each child
         public printCST(node: CSTNode, indent = ""){
             (<HTMLInputElement>document.getElementById("taOutput")).value += "  CST --> | " + indent + "<" + node.value + ">" + "\n";
             for (const child of node.children) {

@@ -30,8 +30,8 @@ h1{
 	font-weight: bold;
 	text-align: center;
 }
-#btnCompile{
-	width:200px;
+#btnCompile, #btnReset{
+	width:150px;
 	text-align: center;
 }
 .output{
