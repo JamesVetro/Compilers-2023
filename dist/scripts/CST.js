@@ -35,7 +35,7 @@ var TSC;
         };
         CST.prototype.printCST = function (node, indent) {
             if (indent === void 0) { indent = ""; }
-            document.getElementById("taOutput").value += "CST --> | " + indent + "<" + node.value + ">" + "\n";
+            document.getElementById("taOutput").value += "  CST --> | " + indent + "<" + node.value + ">" + "\n";
             for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 this.printCST(child, indent + "-");
