@@ -40,6 +40,7 @@ var TSC;
             document.getElementById("taOutput").value += "PARSER - | Parse Completed Successfully \n\n";
             document.getElementById("taOutput").value += "CST for Program " + progNum + ": \n";
             _CST.printCST(_CST.getRootNode());
+            document.getElementById("taOutput").value += "CST Complete.\n";
         }
         else {
             document.getElementById("taOutput").value += "PARSER - | Parse Failed with " + parseError + " error(s).\n\n";
@@ -94,7 +95,7 @@ var TSC;
             _CST.moveUp();
         }
         else {
-            document.getElementById("taOutput").value += "  PARSER ERROR - | Expected a statement start (PRINT, a variable, IF, WHILE, variable declaration, or left curly bracket), and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + " On line: " + tokenList[0][2];
+            document.getElementById("taOutput").value += "  PARSER ERROR - | Expected a statement start (PRINT, a variable, IF, WHILE, variable declaration, or left curly bracket), and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + "' On line: " + tokenList[0][2];
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
@@ -186,7 +187,7 @@ var TSC;
         }
         else {
             parseError++;
-            document.getElementById("taOutput").value += "  PARSER ERROR - | Expected an expression start (an integer, a string, a left paren, or a variable), and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + " On line: " + tokenList[0][2];
+            document.getElementById("taOutput").value += "  PARSER ERROR - | Expected an expression start (an integer, a string, a left paren, or a variable), and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + "' On line: " + tokenList[0][2];
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
@@ -211,6 +212,7 @@ var TSC;
         var nextToken = tokenList[0][0];
         return nextToken;
     }
+    //basic match function 
     function matchToken(checkValue) {
         if (checkValue == tokenList[0][0]) {
             laterTokens.push(tokenList[0]);
@@ -220,7 +222,7 @@ var TSC;
         }
         else {
             parseError++;
-            document.getElementById("taOutput").value += "  PARSER ERROR - | Expected: " + checkValue + ", and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + " On line: " + tokenList[0][2];
+            document.getElementById("taOutput").value += "  PARSER ERROR - | Expected: " + checkValue + ", and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + "' On line: " + tokenList[0][2];
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }

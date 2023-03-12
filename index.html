@@ -9,7 +9,7 @@
 <body onload="init();">
     <h1>James Vetro's Project 2</h1>
     <hr>
-    <p><em>Simple Lexer and Parser, working on adding CST</em></p>
+    <p><em>Simple Lexer and Parser</em></p>
 
 	 <pre>
 This google doc has various test cases to try: https://docs.google.com/document/d/13lfY-vzVWwBsgnNV49eNbqzret1Mp4_nHhbe0wDoLj8/edit?usp=sharing
@@ -17,6 +17,7 @@ This google doc has various test cases to try: https://docs.google.com/document/
 
     <div style="text-align:center;">
         <input type="button" id="btnCompile" value="Compile" onclick="btnCompile_click();"/>
+		<input type="button" id="btnReset" value="Reset" onclick="btnReset_click();"/>
     </div>
 
     <div>
@@ -56,6 +57,10 @@ This google doc has various test cases to try: https://docs.google.com/document/
 	        // Grab the tokens from the lexer . . .
 	        tokens = _Lexer.lex();
 	    }
+		function btnReset_click(){
+			(document.getElementById("taOutput")).value = "";
+			(document.getElementById("taSourceCode")).value = "";
+		}
 		function putMessage(msg) {
 	        document.getElementById("taOutput").value += msg + "\n";
 	    }

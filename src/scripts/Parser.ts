@@ -33,6 +33,7 @@ module TSC {
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Completed Successfully \n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
             _CST.printCST(_CST.getRootNode());
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST Complete.\n"; 
         }else{
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Failed with "+parseError +" error(s).\n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+":Skipped due to PARSER errors.\n\n";
@@ -86,7 +87,7 @@ module TSC {
         parseBlock();
        _CST.moveUp();
        }else{
-        (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected a statement start (PRINT, a variable, IF, WHILE, variable declaration, or left curly bracket), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
+        (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected a statement start (PRINT, a variable, IF, WHILE, variable declaration, or left curly bracket), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+"' On line: "+tokenList[0][2]; 
         laterTokens.push(tokenList[0]);
         tokenList.shift();
        }
@@ -177,7 +178,7 @@ module TSC {
            _CST.moveUp();
         }else{
             parseError++;
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected an expression start (an integer, a string, a left paren, or a variable), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected an expression start (an integer, a string, a left paren, or a variable), and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+"' On line: "+tokenList[0][2]; 
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
@@ -205,7 +206,7 @@ module TSC {
         let nextToken = tokenList[0][0];
         return nextToken;
     }
-
+//basic match function 
     function matchToken(checkValue:TokenType){
         if(checkValue == tokenList[0][0]){
             laterTokens.push(tokenList[0]);
@@ -214,7 +215,7 @@ module TSC {
             _CST.moveUp();
         }else{
             parseError++;
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected: "+checkValue+", and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+" On line: "+tokenList[0][2]; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected: "+checkValue+", and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+"' On line: "+tokenList[0][2]; 
             laterTokens.push(tokenList[0]);
             tokenList.shift();
         }
