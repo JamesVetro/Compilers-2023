@@ -18,7 +18,7 @@ module TSC {
             if (node.parent == null) {
                 node.name = "goal";
                 node.parent = null;
-                node.value = null;
+                node.value = "program";
                 currentNode = node;
                 rootNode = node;
             }else{

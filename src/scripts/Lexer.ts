@@ -15,7 +15,12 @@ module TSC {
                 
                 token = lexer.getNextToken();
                 if(checker != "$" && token.value == "null"){ //makes sure there's an end of file note at the end of the whole set of programs.
-                  (<HTMLInputElement>document.getElementById("taOutput")).value += "  LEXER - | " + TokenType.WARNING+" NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.\n\n";
+                  (<HTMLInputElement>document.getElementById("taOutput")).value += "  LEXER - | " + TokenType.WARNING+" NO END CHARACTER FOUND. CHECK FOR UNCLOSED COMMENTS OR ADD AN EOF CHARACTER.\n";
+                  if(token.errorNum == 0){
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "Lex completed with 0 errors. \n \n";
+                  }else{
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "Lex FAILED with: "+token.errorNum+" errors. \n \n";
+                  }
                   Parser.parse(TokenType.EOF,"Assumed EOF",token.line,token.errorNum,token.progNum);
                 }
               }
