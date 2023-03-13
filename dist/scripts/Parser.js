@@ -1,7 +1,9 @@
 "use strict";
 var TSC;
 (function (TSC) {
+    //the actual token storage
     var tokenList = [];
+    //not really used yet but I just feel like it might be useful to keep the tokens. 
     var laterTokens = [];
     var listLen = tokenList.length;
     var parseError = 0;
@@ -11,6 +13,7 @@ var TSC;
         Parser.parse = function (inToken, tokenValue, lineNum, lexError, progNum) {
             if (inToken == TokenType.EOF) {
                 listLen = tokenList.push([inToken, tokenValue, lineNum]);
+                //Doesn't run parse or CST unless there are no lex errors. 
                 if (lexError == 0) {
                     document.getElementById("taOutput").value += "PARSER - | Parsing program " + progNum + ": \n";
                     parseProgram(progNum);
@@ -36,6 +39,7 @@ var TSC;
         parseBlock();
         matchToken(TokenType.EOF);
         _CST.moveUp();
+        //chooses to print cst or not based on parser errors or lack thereof
         if (parseError == 0) {
             document.getElementById("taOutput").value += "PARSER - | Parse Completed Successfully \n\n";
             document.getElementById("taOutput").value += "CST for Program " + progNum + ": \n";
@@ -47,6 +51,7 @@ var TSC;
             document.getElementById("taOutput").value += "CST for Program " + progNum + ":Skipped due to PARSER errors.\n\n";
         }
     }
+    //the rest of the parse statements are fairly self explanatory, simply going down then back up the tree adding nodes and checking tokens.
     function parseBlock() {
         document.getElementById("taOutput").value += "  PARSER - | parseBlock() \n";
         _CST.addNode({ name: "block", parent: _CST.getCurrentNode(), children: [], value: "block" });
@@ -208,6 +213,8 @@ var TSC;
         parseExpr();
         _CST.moveUp();
     }
+    /*figured I'd do this for simplicity's sake so code is more readable.
+    Doesn't actually do anything to be honest, could replace nexttoken anywhere with "tokenList[0][0]"*/
     function nextToken() {
         var nextToken = tokenList[0][0];
         return nextToken;
@@ -219,6 +226,7 @@ var TSC;
             _CST.addNode({ name: checkValue, parent: _CST.getCurrentNode(), children: [], value: tokenList[0][1] });
             tokenList.shift();
             _CST.moveUp();
+            //CST work is unnessecary if this else is triggered because the CST won't be printed anyway due to the error.
         }
         else {
             parseError++;

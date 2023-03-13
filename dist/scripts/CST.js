@@ -2,34 +2,34 @@
 var TSC;
 (function (TSC) {
     var rootNode;
-    var currentNode;
+    var currNode;
     var CST = /** @class */ (function () {
         function CST() {
         }
         CST.prototype.moveUp = function () {
-            if (currentNode.parent !== null) {
-                currentNode = currentNode.parent;
+            if (currNode.parent !== null) {
+                currNode = currNode.parent;
             }
         };
         //Adds nodes to the tree
         CST.prototype.addNode = function (node) {
             if (node.parent == null) {
-                node.name = "goal";
+                node.name = "program";
                 node.parent = null;
                 node.value = "program";
-                currentNode = node;
+                currNode = node;
                 rootNode = node;
             }
             else {
-                node.parent = currentNode;
-                currentNode.children.push(node);
+                node.parent = currNode;
+                currNode.children.push(node);
             }
             if (node.name != typeof TokenType) {
-                currentNode = node;
+                currNode = node;
             }
         };
         CST.prototype.getCurrentNode = function () {
-            return currentNode;
+            return currNode;
         };
         CST.prototype.getRootNode = function () {
             return rootNode;
