@@ -2,36 +2,36 @@ module TSC {
     interface CSTNode{
         name: string | TokenType | null;
         parent: CSTNode | null;
-        value: string | number |null;
+        value: string | number | null;
         children: CSTNode[];
     }
     let rootNode: CSTNode;
-    let currentNode: CSTNode;
+    let currNode: CSTNode;
     export class CST{
         public moveUp() {
-            if (currentNode.parent !== null){
-                currentNode = currentNode.parent;
+            if (currNode.parent !== null){
+                currNode = currNode.parent;
               }
         }
         //Adds nodes to the tree
         public addNode(node: CSTNode) {
             if (node.parent == null) {
-                node.name = "goal";
+                node.name = "program";
                 node.parent = null;
                 node.value = "program";
-                currentNode = node;
+                currNode = node;
                 rootNode = node;
             }else{
-                node.parent = currentNode;
-                currentNode.children.push(node);
+                node.parent = currNode;
+                currNode.children.push(node);
             }
             if (node.name != typeof TokenType){
-                currentNode = node;
+                currNode = node;
             }
         }
 
         public getCurrentNode(){
-            return currentNode;
+            return currNode;
         }
 
         public getRootNode(){

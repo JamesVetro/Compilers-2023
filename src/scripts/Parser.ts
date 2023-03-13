@@ -1,5 +1,7 @@
 module TSC {
+    //the actual token storage
     let tokenList:(TokenType|string|number)[][] = [];
+    //not really used yet but I just feel like it might be useful to keep the tokens. 
     let laterTokens:(TokenType|string|number)[][] = [];
     let listLen = tokenList.length;
     let parseError:number = 0;
@@ -7,6 +9,7 @@ module TSC {
         public static parse(inToken:TokenType,tokenValue:string,lineNum:number,lexError:number,progNum:number) {
             if(inToken == TokenType.EOF){
                 listLen = tokenList.push([inToken,tokenValue,lineNum]);
+                //Doesn't run parse or CST unless there are no lex errors. 
                 if(lexError == 0){
                     (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parsing program "+progNum+": \n"; 
                     parseProgram(progNum);
@@ -29,6 +32,7 @@ module TSC {
         parseBlock();
         matchToken(TokenType.EOF);
         _CST.moveUp();
+        //chooses to print cst or not based on parser errors or lack thereof
         if(parseError == 0){
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Completed Successfully \n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
@@ -41,7 +45,7 @@ module TSC {
 
         
     }
-
+ //the rest of the parse statements are fairly self explanatory, simply going down then back up the tree adding nodes and checking tokens.
     function parseBlock(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseBlock() \n";
        _CST.addNode({name: "block", parent:_CST.getCurrentNode(), children: [], value: "block"});
@@ -64,7 +68,7 @@ module TSC {
         }
        _CST.moveUp();
     }
-
+   
     function parseStatement(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseStatement() \n";
        _CST.addNode({name: "statement", parent:_CST.getCurrentNode(), children: [], value: "statement"});
@@ -201,7 +205,8 @@ module TSC {
         parseExpr();
        _CST.moveUp();
     }
-
+/*figured I'd do this for simplicity's sake so code is more readable. 
+Doesn't actually do anything to be honest, could replace nexttoken anywhere with "tokenList[0][0]"*/
     function nextToken(){
         let nextToken = tokenList[0][0];
         return nextToken;
@@ -213,6 +218,7 @@ module TSC {
             _CST.addNode({name: checkValue, parent:_CST.getCurrentNode(), children: [], value: tokenList[0][1]});
             tokenList.shift();
             _CST.moveUp();
+        //CST work is unnessecary if this else is triggered because the CST won't be printed anyway due to the error.
         }else{
             parseError++;
             (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER ERROR - | Expected: "+checkValue+", and instead got: "+tokenList[0][0]+" With value: '"+tokenList[0][1]+"' On line: "+tokenList[0][2]; 
