@@ -209,8 +209,10 @@ var TSC;
         document.getElementById("taOutput").value += "  PARSER - | parseIntExpr() \n";
         _CST.addNode({ name: "intExpr", parent: _CST.getCurrentNode(), children: [], value: "intExpr" });
         matchToken(TokenType.INTEGER);
-        matchToken(TokenType.INTOP);
-        parseExpr();
+        if (tokenList[1][0] == TokenType.INTOP) {
+            matchToken(TokenType.INTOP);
+            parseExpr();
+        }
         _CST.moveUp();
     }
     /*figured I'd do this for simplicity's sake so code is more readable.
