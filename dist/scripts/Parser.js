@@ -44,20 +44,26 @@ var TSC;
             document.getElementById("taOutput").value += "PARSER - | Parse Completed Successfully \n\n";
             document.getElementById("taOutput").value += "CST for Program " + progNum + ": \n";
             _CST.printCST(_CST.getRootNode());
-            document.getElementById("taOutput").value += "CST Complete.\n";
+            document.getElementById("taOutput").value += "CST Complete.\n\n";
+            document.getElementById("taOutput").value += "AST for Program " + progNum + ": \n";
+            _AST.printAST(_AST.getRootNode());
+            document.getElementById("taOutput").value += "AST Complete.\n";
         }
         else {
             document.getElementById("taOutput").value += "PARSER - | Parse Failed with " + parseError + " error(s).\n\n";
             document.getElementById("taOutput").value += "CST for Program " + progNum + ":Skipped due to PARSER errors.\n\n";
+            document.getElementById("taOutput").value += "AST for Program " + progNum + ":Skipped due to PARSER errors.\n\n";
         }
     }
     //the rest of the parse statements are fairly self explanatory, simply going down then back up the tree adding nodes and checking tokens.
     function parseBlock() {
         document.getElementById("taOutput").value += "  PARSER - | parseBlock() \n";
         _CST.addNode({ name: "block", parent: _CST.getCurrentNode(), children: [], value: "block" });
+        _AST.addNode({ name: "block", parent: _AST.getCurrentNode(), children: [], value: "block" });
         matchToken(TokenType.LCURLY);
         parseStatementList();
         matchToken(TokenType.RCURLY);
+        _AST.moveUp();
         _CST.moveUp();
     }
     function parseStatementList() {
@@ -117,24 +123,69 @@ var TSC;
     function parseAssignmentStatement() {
         document.getElementById("taOutput").value += "  PARSER - | parseAssignmentStatement() \n";
         _CST.addNode({ name: "assignmentStatement", parent: _CST.getCurrentNode(), children: [], value: "assignmentStatement" });
+        _AST.addNode({ name: "assignmentStatement", parent: _AST.getCurrentNode(), children: [], value: "assignmentStatement" });
+        _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: tokenList[0][1] });
         matchToken(TokenType.VARIABLE);
         matchToken(TokenType.OPERATOR);
+        _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: ASTExpr(0)[1].toString() });
         parseExpr();
+        _AST.moveUp();
         _CST.moveUp();
+    }
+    function ASTExpr(num) {
+        if (nextToken() == TokenType.INTEGER) {
+            if (tokenList[num + 1][0] == TokenType.INTOP) {
+                num = num + 2;
+                var run = ASTExpr(num)[1].toString();
+                num = ASTExpr(num)[2];
+                var holder1 = tokenList[num + 1][1].toString();
+                var holder2 = (holder1 + tokenList[1][1] + run[1]).toString();
+                return ["INTEXPR", holder2, num];
+            }
+            else {
+                return ["INTEGER", tokenList[0][1], 1];
+            }
+        }
+        else if (nextToken() == TokenType.QMARK) {
+            var Holder = '"' + tokenList[1][1] + '"';
+            return ["STRINGEXPR", Holder, 3];
+        }
+        else if (nextToken() == TokenType.LPAREN) {
+            num++;
+            var run = ASTExpr(num)[1].toString();
+            num = ASTExpr(num)[2];
+            var holder = "(" + run;
+            holder = holder + tokenList[num][1];
+            num++;
+            run = ASTExpr(num)[1].toString();
+            num = ASTExpr(num)[2];
+            holder = holder + run + ")";
+            return ["BOOLEANEXPR", holder, num];
+        }
+        else if (nextToken() == TokenType.VARIABLE) {
+            return ["VARIABLE", tokenList[0][1], 1];
+        }
+        return ["VARIABLE", tokenList[0][1], 1];
     }
     function parseVarDecl() {
         document.getElementById("taOutput").value += "  PARSER - | parseVarDecl() \n";
         _CST.addNode({ name: "varDecl", parent: _CST.getCurrentNode(), children: [], value: "varDecl" });
+        _AST.addNode({ name: "varDecl", parent: _AST.getCurrentNode(), children: [], value: "varDecl" });
         if (nextToken() == TokenType.INT) {
             matchToken(TokenType.INT);
+            _AST.addNode({ name: "INT", parent: _AST.getCurrentNode(), children: [], value: "INT" });
         }
         else if (nextToken() == TokenType.STRING) {
             matchToken(TokenType.STRING);
+            _AST.addNode({ name: "STRING", parent: _AST.getCurrentNode(), children: [], value: "STRING" });
         }
         else if (nextToken() == TokenType.BOOLEAN) {
             matchToken(TokenType.BOOLEAN);
+            _AST.addNode({ name: "BOOLEAN", parent: _AST.getCurrentNode(), children: [], value: "BOOLEAN" });
         }
+        _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: tokenList[0][1] });
         matchToken(TokenType.VARIABLE);
+        _AST.moveUp();
         _CST.moveUp();
     }
     function parseWhileStatement() {
@@ -209,8 +260,15 @@ var TSC;
         document.getElementById("taOutput").value += "  PARSER - | parseIntExpr() \n";
         _CST.addNode({ name: "intExpr", parent: _CST.getCurrentNode(), children: [], value: "intExpr" });
         matchToken(TokenType.INTEGER);
+<<<<<<< Updated upstream
         matchToken(TokenType.INTOP);
         parseExpr();
+=======
+        if (tokenList[0][0] == TokenType.INTOP) {
+            matchToken(TokenType.INTOP);
+            parseExpr();
+        }
+>>>>>>> Stashed changes
         _CST.moveUp();
     }
     /*figured I'd do this for simplicity's sake so code is more readable.

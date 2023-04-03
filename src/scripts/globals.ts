@@ -6,7 +6,7 @@ var onDocumentLoad = function() {
 var _Lexer = TSC.Lexer;
 var _Parser = TSC.Parser;
 var _CST = new TSC.CST();
-
+var _AST = new TSC.AST();
 // Global variables
     var tokens = "";
     var tokenIndex = 0;

@@ -37,10 +37,14 @@ module TSC {
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Completed Successfully \n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
             _CST.printCST(_CST.getRootNode());
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST Complete.\n"; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST Complete.\n\n"; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "AST for Program "+progNum+": \n"; 
+            _AST.printAST(_AST.getRootNode());
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "AST Complete.\n"; 
         }else{
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Failed with "+parseError +" error(s).\n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+":Skipped due to PARSER errors.\n\n";
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "AST for Program "+progNum+":Skipped due to PARSER errors.\n\n";
         }
 
         
@@ -49,9 +53,11 @@ module TSC {
     function parseBlock(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseBlock() \n";
        _CST.addNode({name: "block", parent:_CST.getCurrentNode(), children: [], value: "block"});
+       _AST.addNode({name: "block", parent:_AST.getCurrentNode(), children: [], value: "block"});
         matchToken(TokenType.LCURLY);
         parseStatementList();
         matchToken(TokenType.RCURLY);
+        _AST.moveUp();
        _CST.moveUp();
     }
 
@@ -110,23 +116,74 @@ module TSC {
     function parseAssignmentStatement(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseAssignmentStatement() \n";
        _CST.addNode({name: "assignmentStatement", parent:_CST.getCurrentNode(), children: [], value: "assignmentStatement"});
+       _AST.addNode({name: "assignmentStatement", parent:_AST.getCurrentNode(), children: [], value: "assignmentStatement"});
+       _AST.addNode({name: "VARIABLE", parent:_AST.getCurrentNode(), children: [], value: tokenList[0][1]});
         matchToken(TokenType.VARIABLE);
         matchToken(TokenType.OPERATOR);
+        _AST.addNode({name: "VARIABLE", parent:_AST.getCurrentNode(), children: [], value: ASTExpr(0)[1].toString()});
         parseExpr();
+        _AST.moveUp(); 
        _CST.moveUp();
     }
     
+
+
+
+    function ASTExpr(num:any):(TokenType|string|number)[]{
+        if(nextToken() == TokenType.INTEGER){
+            if(tokenList[num+1][0] == TokenType.INTOP){
+                num = num + 2;
+                let run:string = ASTExpr(num)[1].toString();
+                num = ASTExpr(num)[2]
+                let holder1:string = tokenList[num+1][1].toString();
+                let holder2:string = (holder1 + tokenList[1][1]+ run[1]).toString();
+                return ["INTEXPR",holder2,num];
+            }else{
+                return ["INTEGER", tokenList[0][1],1];
+            }
+        }else if(nextToken() == TokenType.QMARK){
+            let Holder:string = '"'+tokenList[1][1]+'"'
+            return ["STRINGEXPR", Holder,3]
+        }else if(nextToken() == TokenType.LPAREN){
+            num++;
+            let run:string = ASTExpr(num)[1].toString();
+            num = ASTExpr(num)[2]
+            let holder = "("+run;
+            holder = holder+tokenList[num][1];
+            num++;
+            run = ASTExpr(num)[1].toString();
+            num = ASTExpr(num)[2]
+            holder = holder+run+")";
+            return ["BOOLEANEXPR", holder,num]
+        }else if(nextToken() == TokenType.VARIABLE){
+            return ["VARIABLE", tokenList[0][1],1]
+        }
+        return["VARIABLE", tokenList[0][1],1]
+    }
+
+
+
+
+
+
+
     function parseVarDecl(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseVarDecl() \n";
        _CST.addNode({name: "varDecl", parent:_CST.getCurrentNode(), children: [], value: "varDecl"});
+       _AST.addNode({name: "varDecl", parent:_AST.getCurrentNode(), children: [], value: "varDecl"});
         if(nextToken() == TokenType.INT){
             matchToken(TokenType.INT);
+            _AST.addNode({name: "INT", parent:_AST.getCurrentNode(), children: [], value: "INT"});
         }else if(nextToken() == TokenType.STRING){
             matchToken(TokenType.STRING);
+            _AST.addNode({name: "STRING", parent:_AST.getCurrentNode(), children: [], value: "STRING"});
         }else if(nextToken() == TokenType.BOOLEAN){
             matchToken(TokenType.BOOLEAN);
+            _AST.addNode({name: "BOOLEAN", parent:_AST.getCurrentNode(), children: [], value: "BOOLEAN"});
         }
+        _AST.addNode({name: "VARIABLE", parent:_AST.getCurrentNode(), children: [], value: tokenList[0][1]});
         matchToken(TokenType.VARIABLE)
+        _AST.moveUp();
        _CST.moveUp();
     }
 
@@ -201,8 +258,15 @@ module TSC {
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseIntExpr() \n";
        _CST.addNode({name: "intExpr", parent:_CST.getCurrentNode(), children: [], value: "intExpr"});
         matchToken(TokenType.INTEGER);
+<<<<<<< Updated upstream
         matchToken(TokenType.INTOP);
         parseExpr();
+=======
+        if(tokenList[0][0] == TokenType.INTOP){
+            matchToken(TokenType.INTOP);
+            parseExpr();
+        }
+>>>>>>> Stashed changes
        _CST.moveUp();
     }
 /*figured I'd do this for simplicity's sake so code is more readable. 
