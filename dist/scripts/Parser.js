@@ -6,7 +6,6 @@ var TSC;
     //not really used yet but I just feel like it might be useful to keep the tokens. 
     var laterTokens = [];
     var SymAnArray = [];
-    var listLen = tokenList.length;
     var parseError = 0;
     var SymError = 0;
     var Parser = /** @class */ (function () {
@@ -14,7 +13,7 @@ var TSC;
         }
         Parser.parse = function (inToken, tokenValue, lineNum, lexError, progNum) {
             if (inToken == TokenType.EOF) {
-                listLen = tokenList.push([inToken, tokenValue, lineNum]);
+                tokenList.push([inToken, tokenValue, lineNum]);
                 //Doesn't run parse or CST unless there are no lex errors. 
                 if (lexError == 0) {
                     document.getElementById("taOutput").value += "PARSER - | Parsing program " + progNum + ": \n";
@@ -31,7 +30,7 @@ var TSC;
                 }
             }
             else {
-                listLen = tokenList.push([inToken, tokenValue, lineNum]);
+                tokenList.push([inToken, tokenValue, lineNum]);
             }
         };
         return Parser;
@@ -132,6 +131,11 @@ var TSC;
         _CST.addNode({ name: "printStatement", parent: _CST.getCurrentNode(), children: [], value: "printStatement" });
         matchToken(TokenType.PRINT);
         matchToken(TokenType.LPAREN);
+        var holder = ASTExpr(0);
+        if (holder[2] == true) {
+            _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
+            _AST.moveUp();
+        }
         parseExpr();
         matchToken(TokenType.RPAREN);
         _CST.moveUp();
@@ -146,6 +150,8 @@ var TSC;
         _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: ASTExpr(0)[1].toString() });
         parseExpr();
         _AST.moveUp();
+        _AST.moveUp();
+        _AST.moveUp();
         _CST.moveUp();
     }
     function ASTExpr(num) {
@@ -153,10 +159,17 @@ var TSC;
             if (tokenList[num + 1][0] == TokenType.INTOP) {
                 num = num + 2;
                 var run = ASTExpr(num)[1].toString();
-                num = ASTExpr(num)[2];
+                var numArr = ASTExpr(num);
+                num = numArr[2];
+                var boolExpr = numArr[3];
                 var holder1 = tokenList[num + 1][1].toString();
                 var holder2 = (holder1 + tokenList[1][1] + run[1]).toString();
-                return ["INTEXPR", holder2, num];
+                if (boolExpr == true) {
+                    return ["INTEXPR", holder2, num, true];
+                }
+                else {
+                    return ["INTEXPR", holder2, num, false];
+                }
             }
             else {
                 return ["INTEGER", tokenList[0][1], 1];
@@ -168,20 +181,31 @@ var TSC;
         }
         else if (nextToken() == TokenType.LPAREN) {
             num++;
-            var run = ASTExpr(num)[1].toString();
-            num = ASTExpr(num)[2];
-            var holder = "(" + run;
+            var numArr = ASTExpr(num);
+            var run = numArr[1].toString();
+            num = numArr[2];
+            var boolExpr = numArr[3];
+            var holder = "{" + run;
             holder = holder + tokenList[num][1];
             num++;
-            run = ASTExpr(num)[1].toString();
-            num = ASTExpr(num)[2];
-            holder = holder + run + ")";
-            return ["BOOLEANEXPR", holder, num];
+            numArr = ASTExpr(num);
+            run = numArr[1].toString();
+            num = numArr[2];
+            if (numArr[3] == true) {
+                boolExpr = true;
+            }
+            holder = holder + run + "}";
+            if (boolExpr == true) {
+                return ["BOOLEANEXPR", holder, num, true];
+            }
+            else {
+                return ["BOOLEANEXPR", holder, num, false];
+            }
         }
         else if (nextToken() == TokenType.VARIABLE) {
-            return ["VARIABLE", tokenList[0][1], 1];
+            return ["VARIABLE", tokenList[0][1], 1, true];
         }
-        return ["VARIABLE", tokenList[0][1], 1];
+        return ["ERROR", tokenList[0][1], 1, false];
     }
     function parseVarDecl() {
         document.getElementById("taOutput").value += "  PARSER - | parseVarDecl() \n";
@@ -192,20 +216,24 @@ var TSC;
             matchToken(TokenType.INT);
             _AST.addNode({ name: "INT", parent: _AST.getCurrentNode(), children: [], value: "INT" });
             types = "INT";
+            _AST.moveUp();
         }
         else if (nextToken() == TokenType.STRING) {
             matchToken(TokenType.STRING);
             _AST.addNode({ name: "STRING", parent: _AST.getCurrentNode(), children: [], value: "STRING" });
             types = "STRING";
+            _AST.moveUp();
         }
         else if (nextToken() == TokenType.BOOLEAN) {
             matchToken(TokenType.BOOLEAN);
             _AST.addNode({ name: "BOOLEAN", parent: _AST.getCurrentNode(), children: [], value: "BOOLEAN" });
             types = "BOOLEAN";
+            _AST.moveUp();
         }
         _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: tokenList[0][1] });
         _SymTab.addNode({ name: tokenList[0][1].toString(), type: types, Scope: 0, LineNum: tokenList[0][2] });
         matchToken(TokenType.VARIABLE);
+        _AST.moveUp();
         _AST.moveUp();
         _CST.moveUp();
     }
@@ -230,8 +258,18 @@ var TSC;
         _CST.addNode({ name: "booleanExpr", parent: _CST.getCurrentNode(), children: [], value: "booleanExpr" });
         if (nextToken() == TokenType.LPAREN) {
             matchToken(TokenType.LPAREN);
+            var holder = ASTExpr(0);
+            if (holder[2] == true) {
+                _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
+                _AST.moveUp();
+            }
             parseExpr();
             matchToken(TokenType.BOOLOP);
+            holder = ASTExpr(0);
+            if (holder[2] == true) {
+                _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
+                _AST.moveUp();
+            }
             parseExpr();
             matchToken(TokenType.RPAREN);
         }
@@ -284,6 +322,11 @@ var TSC;
         if (tokenList[0][0] == TokenType.INTOP) {
             matchToken(TokenType.INTOP);
             intExprSemAnalysis();
+            var holder = ASTExpr(0);
+            if (holder[2] == true) {
+                _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
+                _AST.moveUp();
+            }
             parseExpr();
         }
         _CST.moveUp();

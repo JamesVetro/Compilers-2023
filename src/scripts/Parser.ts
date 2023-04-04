@@ -4,13 +4,12 @@ module TSC {
     //not really used yet but I just feel like it might be useful to keep the tokens. 
     let laterTokens:(TokenType|string|number)[][] = [];
     let SymAnArray:string[] = []
-    let listLen = tokenList.length;
     let parseError:number = 0;
     let SymError:number = 0;
     export class Parser {
         public static parse(inToken:TokenType,tokenValue:string,lineNum:number,lexError:number,progNum:number) {
             if(inToken == TokenType.EOF){
-                listLen = tokenList.push([inToken,tokenValue,lineNum]);
+                tokenList.push([inToken,tokenValue,lineNum]);
                 //Doesn't run parse or CST unless there are no lex errors. 
                 if(lexError == 0){
                     (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parsing program "+progNum+": \n"; 
@@ -25,7 +24,7 @@ module TSC {
                     SymError = 0;
                 }
             }else{
-                listLen = tokenList.push([inToken,tokenValue,lineNum]);
+                tokenList.push([inToken,tokenValue,lineNum]);
             }
         }
     } 
@@ -124,6 +123,11 @@ module TSC {
        _CST.addNode({name: "printStatement", parent:_CST.getCurrentNode(), children: [], value: "printStatement"});
         matchToken(TokenType.PRINT);
         matchToken(TokenType.LPAREN);
+        let holder = ASTExpr(0)
+        if(holder[2] == true){
+            _AST.addNode({name: holder[1].toString(), parent:_AST.getCurrentNode(), children: [], value: holder[1].toString()});
+            _AST.moveUp();
+        }
         parseExpr();
         matchToken(TokenType.RPAREN);
        _CST.moveUp();
@@ -139,21 +143,29 @@ module TSC {
         _AST.addNode({name: "VARIABLE", parent:_AST.getCurrentNode(), children: [], value: ASTExpr(0)[1].toString()});
         parseExpr();
         _AST.moveUp(); 
+        _AST.moveUp();
+        _AST.moveUp();
        _CST.moveUp();
     }
     
 
 
 
-    function ASTExpr(num:any):(TokenType|string|number)[]{
+    function ASTExpr(num:any):(TokenType|string|number|Boolean)[]{
         if(nextToken() == TokenType.INTEGER){
             if(tokenList[num+1][0] == TokenType.INTOP){
                 num = num + 2;
                 let run:string = ASTExpr(num)[1].toString();
-                num = ASTExpr(num)[2]
+                let numArr = ASTExpr(num)
+                num = numArr[2];
+                let boolExpr = numArr[3]
                 let holder1:string = tokenList[num+1][1].toString();
                 let holder2:string = (holder1 + tokenList[1][1]+ run[1]).toString();
-                return ["INTEXPR",holder2,num];
+                if(boolExpr == true){
+                    return ["INTEXPR",holder2,num,true];
+                }else{
+                    return ["INTEXPR",holder2,num,false];
+                }
             }else{
                 return ["INTEGER", tokenList[0][1],1];
             }
@@ -162,19 +174,30 @@ module TSC {
             return ["STRINGEXPR", Holder,3]
         }else if(nextToken() == TokenType.LPAREN){
             num++;
-            let run:string = ASTExpr(num)[1].toString();
-            num = ASTExpr(num)[2]
-            let holder = "("+run;
+            let numArr = ASTExpr(num)
+            let run:string = numArr[1].toString();
+            num = numArr[2];
+            let boolExpr = numArr[3]
+            let holder = "{"+run;
             holder = holder+tokenList[num][1];
             num++;
-            run = ASTExpr(num)[1].toString();
-            num = ASTExpr(num)[2]
-            holder = holder+run+")";
-            return ["BOOLEANEXPR", holder,num]
+            numArr = ASTExpr(num)
+            run = numArr[1].toString();
+            num = numArr[2];
+            if(numArr[3] == true){
+                boolExpr = true;
+            }
+            holder = holder+run+"}";
+            if(boolExpr == true){
+                return ["BOOLEANEXPR", holder,num,true]
+            }else{
+                return ["BOOLEANEXPR", holder,num,false]
+            }
+            
         }else if(nextToken() == TokenType.VARIABLE){
-            return ["VARIABLE", tokenList[0][1],1]
+            return ["VARIABLE", tokenList[0][1],1,true]
         }
-        return["VARIABLE", tokenList[0][1],1]
+        return["ERROR", tokenList[0][1],1,false]
     }
 
 
@@ -192,19 +215,22 @@ module TSC {
             matchToken(TokenType.INT);
             _AST.addNode({name: "INT", parent:_AST.getCurrentNode(), children: [], value: "INT"});
             types = "INT"
+            _AST.moveUp();
         }else if(nextToken() == TokenType.STRING){
             matchToken(TokenType.STRING);
             _AST.addNode({name: "STRING", parent:_AST.getCurrentNode(), children: [], value: "STRING"});
             types = "STRING"
+            _AST.moveUp();
         }else if(nextToken() == TokenType.BOOLEAN){
             matchToken(TokenType.BOOLEAN);
             _AST.addNode({name: "BOOLEAN", parent:_AST.getCurrentNode(), children: [], value: "BOOLEAN"});
             types = "BOOLEAN"
+            _AST.moveUp();
         }
         _AST.addNode({name: "VARIABLE", parent:_AST.getCurrentNode(), children: [], value: tokenList[0][1]});
         _SymTab.addNode({name: tokenList[0][1].toString(), type:types, Scope: 0, LineNum: tokenList[0][2]});
         matchToken(TokenType.VARIABLE)
-        
+        _AST.moveUp();
         _AST.moveUp();
        _CST.moveUp();
     }
@@ -232,8 +258,18 @@ module TSC {
        _CST.addNode({name: "booleanExpr", parent:_CST.getCurrentNode(), children: [], value: "booleanExpr"});
         if (nextToken() == TokenType.LPAREN){
             matchToken(TokenType.LPAREN);
+            let holder = ASTExpr(0)
+            if(holder[2] == true){
+                _AST.addNode({name: holder[1].toString(), parent:_AST.getCurrentNode(), children: [], value: holder[1].toString()});
+                _AST.moveUp();
+            }
             parseExpr();
             matchToken(TokenType.BOOLOP);
+            holder = ASTExpr(0)
+            if(holder[2] == true){
+                _AST.addNode({name: holder[1].toString(), parent:_AST.getCurrentNode(), children: [], value: holder[1].toString()});
+                _AST.moveUp();
+            }
             parseExpr();
             matchToken(TokenType.RPAREN);
         }else if (nextToken() == TokenType.FALSE){
@@ -283,6 +319,11 @@ module TSC {
         if(tokenList[0][0] == TokenType.INTOP){
             matchToken(TokenType.INTOP);
             intExprSemAnalysis();
+            let holder = ASTExpr(0)
+            if(holder[2] == true){
+                _AST.addNode({name: holder[1].toString(), parent:_AST.getCurrentNode(), children: [], value: holder[1].toString()});
+                _AST.moveUp();
+            }
             parseExpr();
         }
        _CST.moveUp();
