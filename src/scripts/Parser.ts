@@ -3,8 +3,10 @@ module TSC {
     let tokenList:(TokenType|string|number)[][] = [];
     //not really used yet but I just feel like it might be useful to keep the tokens. 
     let laterTokens:(TokenType|string|number)[][] = [];
+    let SymAnArray:string[] = []
     let listLen = tokenList.length;
     let parseError:number = 0;
+    let SymError:number = 0;
     export class Parser {
         public static parse(inToken:TokenType,tokenValue:string,lineNum:number,lexError:number,progNum:number) {
             if(inToken == TokenType.EOF){
@@ -19,9 +21,11 @@ module TSC {
                     (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Skipped due to LEXER Errors\n\nCST for program "+progNum+ ": Skipped due to LEXER errors\n\n"; 
                     tokenList = [];
                     parseError = 0;
+                    SymAnArray = [];
+                    SymError = 0;
                 }
             }else{
-                listLen = tokenList.push([inToken,tokenValue]);
+                listLen = tokenList.push([inToken,tokenValue,lineNum]);
             }
         }
     } 
@@ -37,10 +41,22 @@ module TSC {
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Completed Successfully \n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
             _CST.printCST(_CST.getRootNode());
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST Complete.\n\n"; 
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "AST for Program "+progNum+": \n"; 
-            _AST.printAST(_AST.getRootNode());
-            (<HTMLInputElement>document.getElementById("taOutput")).value += "AST Complete.\n"; 
+            (<HTMLInputElement>document.getElementById("taOutput")).value += "CST Complete.\n\n";
+            if(SymError == 0){
+                (<HTMLInputElement>document.getElementById("taOutput")).value += "AST for Program "+progNum+": \n";
+                _AST.printAST(_AST.getRootNode());
+                (<HTMLInputElement>document.getElementById("taOutput")).value += "AST Complete.\n\n\n";
+                (<HTMLInputElement>document.getElementById("taOutput")).value += "Program 1 Symbol Table \n-------------------------------------- \nName   Line   Scope   Type\n-------------------------------------\n";
+                _SymTab.printSymbolTable();
+            }else{
+                let n:number = -1;
+                for(n < SymAnArray.length; n++;){
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += SymAnArray[n];
+                }
+                SymAnArray = [];
+                SymError = 0;
+            }
+             
         }else{
             (<HTMLInputElement>document.getElementById("taOutput")).value += "PARSER - | Parse Failed with "+parseError +" error(s).\n\n"; 
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+":Skipped due to PARSER errors.\n\n";
@@ -171,18 +187,24 @@ module TSC {
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseVarDecl() \n";
        _CST.addNode({name: "varDecl", parent:_CST.getCurrentNode(), children: [], value: "varDecl"});
        _AST.addNode({name: "varDecl", parent:_AST.getCurrentNode(), children: [], value: "varDecl"});
+       let types:string = "";
         if(nextToken() == TokenType.INT){
             matchToken(TokenType.INT);
             _AST.addNode({name: "INT", parent:_AST.getCurrentNode(), children: [], value: "INT"});
+            types = "INT"
         }else if(nextToken() == TokenType.STRING){
             matchToken(TokenType.STRING);
             _AST.addNode({name: "STRING", parent:_AST.getCurrentNode(), children: [], value: "STRING"});
+            types = "STRING"
         }else if(nextToken() == TokenType.BOOLEAN){
             matchToken(TokenType.BOOLEAN);
             _AST.addNode({name: "BOOLEAN", parent:_AST.getCurrentNode(), children: [], value: "BOOLEAN"});
+            types = "BOOLEAN"
         }
         _AST.addNode({name: "VARIABLE", parent:_AST.getCurrentNode(), children: [], value: tokenList[0][1]});
+        _SymTab.addNode({name: tokenList[0][1].toString(), type:types, Scope: 0, LineNum: tokenList[0][2]});
         matchToken(TokenType.VARIABLE)
+        
         _AST.moveUp();
        _CST.moveUp();
     }
@@ -258,17 +280,36 @@ module TSC {
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseIntExpr() \n";
        _CST.addNode({name: "intExpr", parent:_CST.getCurrentNode(), children: [], value: "intExpr"});
         matchToken(TokenType.INTEGER);
-<<<<<<< Updated upstream
-        matchToken(TokenType.INTOP);
-        parseExpr();
-=======
         if(tokenList[0][0] == TokenType.INTOP){
             matchToken(TokenType.INTOP);
+            intExprSemAnalysis();
             parseExpr();
         }
->>>>>>> Stashed changes
        _CST.moveUp();
     }
+
+
+    function intExprSemAnalysis(){
+        if(tokenList[0][0] == TokenType.INTEGER){
+            //No error, no code needed
+        }else if(tokenList[0][0] == TokenType.VARIABLE){
+            //No error, no code needed
+        }else if(tokenList[0][0] == TokenType.QMARK){
+            let holder:string = "Semantic Error on line: "+tokenList[0][2]+" Expected a intExpr or variable, instead got string expr"; 
+            SymError = SymError+1;
+            SymAnArray.push(holder);
+        }else if(tokenList[0][0] == TokenType.LPAREN){
+            let holder:string = "Semantic Error on line: "+tokenList[0][2]+" Expected a intExpr or variable, instead found a boolean expr or block statement"; 
+            SymError = SymError+1;
+            SymAnArray.push(holder);
+        }else{
+        }
+        return
+    }
+
+
+
+
 /*figured I'd do this for simplicity's sake so code is more readable. 
 Doesn't actually do anything to be honest, could replace nexttoken anywhere with "tokenList[0][0]"*/
     function nextToken(){
