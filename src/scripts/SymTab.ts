@@ -4,6 +4,8 @@ module TSC {
         type: string;
         Scope: number;
         LineNum: string | number;
+        init:boolean;
+        used:boolean;
     }
 
     let symbolTable: SymTabNode[] = [];
@@ -15,30 +17,58 @@ module TSC {
             symbolTable.push(node);
         }
 
-        /*
-        //Adds nodes to the tree
-        public addNode(node: SymTabNode) {
-            if (node.parent == null) {
-                node.name = "program";
-                node.parent = null;
-                node.value = "program";
-                currNode = node;
-                rootNode = node;
-            }else{
-                node.parent = currNode;
-                currNode.children.push(node);
+        public testType (a: string, type: string){
+            for (const name of symbolTable){
+                if (name.name == a && name.type == type){
+                    return true;
+                }
             }
-            if (node.name != typeof TokenType){
-                currNode = node;
-            }
+            return false;
         }
-        */
-//prints the final ast, adding "-"" for each child
+        public testScope (a: string, scope: number){
+            for (const name of symbolTable){
+                if (name.name == a && name.Scope == scope){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public isInit (a:string,scope:number):boolean{
+            for (const name of symbolTable){
+                if (name.name == a && name.Scope == scope){
+                    name.init = true;
+                    return true
+                }
+            }
+            return false;
+        }
+
+        public typeCheck (a:string,scope:number):string{
+            for (const name of symbolTable){
+                if (name.name == a && name.Scope == scope){
+                    name.used = true;
+                    return name.type;
+                }
+            }
+            return "NOPE";
+        }
+
+        public isUsed(a:string,scope:number):boolean{
+            for (const name of symbolTable){
+                if (name.name == a && name.Scope == scope){
+                    name.used = true;
+                    return true;
+                }
+            }
+            return false;
+        }
         public printSymbolTable(){
             for (const child of symbolTable) {
                 (<HTMLInputElement>document.getElementById("taOutput")).value += "  "+child.name + "          " + 
                 child.LineNum + "           " + child.Scope + "        " + child.type + "\n";
             }
+            symbolTable = [];
         }
     }
 }
