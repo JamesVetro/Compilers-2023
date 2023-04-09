@@ -50,6 +50,18 @@ var TSC;
             document.getElementById("taOutput").value += "CST for Program " + progNum + ": \n";
             _CST.printCST(_CST.getRootNode());
             document.getElementById("taOutput").value += "CST Complete.\n\n";
+            var test1 = _SymTab.finInit();
+            var test2 = _SymTab.finUsed();
+            if (test1 != null) {
+                var holder = "Semantic Error. Variable: " + test1 + " is created but never initialized.";
+                SymError = SymError + 1;
+                SymAnArray.push(holder);
+            }
+            if (test2 != null) {
+                var holder = "Semantic Warning. Variable: " + test2 + " is created but never used.";
+                SymWarning = SymWarning + 1;
+                SymAnArray.push(holder);
+            }
             if (SymError == 0) {
                 if (SymWarning != 0) {
                     var n = -1;
@@ -57,7 +69,10 @@ var TSC;
                         document.getElementById("taOutput").value += SymAnArray[n];
                     }
                 }
-                document.getElementById("taOutput").value += "AST for Program " + progNum + ": \n";
+                else {
+                    document.getElementById("taOutput").value += "No Semantic Errors or Warnings Detected.";
+                }
+                document.getElementById("taOutput").value += "\n\nAST for Program " + progNum + ": \n";
                 _AST.printAST(_AST.getRootNode());
                 document.getElementById("taOutput").value += "AST Complete.\n\n";
                 document.getElementById("taOutput").value += "Program 1 Symbol Table \n-------------------------------------- \nName   Line   Scope   Type\n-------------------------------------\n";
@@ -94,7 +109,7 @@ var TSC;
     function parseBlock() {
         document.getElementById("taOutput").value += "  PARSER - | parseBlock() \n";
         _CST.addNode({ name: "block", parent: _CST.getCurrentNode(), children: [], value: "block" });
-        _AST.addNode({ name: "block", parent: _AST.getCurrentNode(), children: [], value: "block" });
+        _AST.addNode({ name: "block", parent: null, children: [], value: "block" });
         matchToken(TokenType.LCURLY);
         scope++;
         parseStatementList();

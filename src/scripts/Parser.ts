@@ -43,14 +43,28 @@ module TSC {
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST for Program "+progNum+": \n"; 
             _CST.printCST(_CST.getRootNode());
             (<HTMLInputElement>document.getElementById("taOutput")).value += "CST Complete.\n\n";
+            let test1 = _SymTab.finInit();
+            let test2 = _SymTab.finUsed();
+            if(test1 != null){
+                let holder:string = "Semantic Error. Variable: "+test1+" is created but never initialized."; 
+                SymError = SymError+1;
+                SymAnArray.push(holder);
+            }
+            if(test2 != null){
+                let holder:string = "Semantic Warning. Variable: "+test2+" is created but never used."; 
+                SymWarning = SymWarning+1;
+                SymAnArray.push(holder);
+            }
             if(SymError == 0){
                 if(SymWarning != 0){
                     let n:number = -1;
                     for(n < SymAnArray.length; n++;){
                         (<HTMLInputElement>document.getElementById("taOutput")).value += SymAnArray[n];
                     }
+                }else{
+                    (<HTMLInputElement>document.getElementById("taOutput")).value += "No Semantic Errors or Warnings Detected.";
                 }
-                (<HTMLInputElement>document.getElementById("taOutput")).value += "AST for Program "+progNum+": \n";
+                (<HTMLInputElement>document.getElementById("taOutput")).value += "\n\nAST for Program "+progNum+": \n";
                 _AST.printAST(_AST.getRootNode());
                 (<HTMLInputElement>document.getElementById("taOutput")).value += "AST Complete.\n\n";
                 (<HTMLInputElement>document.getElementById("taOutput")).value += "Program 1 Symbol Table \n-------------------------------------- \nName   Line   Scope   Type\n-------------------------------------\n";
@@ -88,7 +102,7 @@ module TSC {
     function parseBlock(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseBlock() \n";
        _CST.addNode({name: "block", parent:_CST.getCurrentNode(), children: [], value: "block"});
-       _AST.addNode({name: "block", parent:_AST.getCurrentNode(), children: [], value: "block"});
+       _AST.addNode({name: "block", parent:null, children: [], value: "block"});
         matchToken(TokenType.LCURLY);
         scope++;
         parseStatementList();

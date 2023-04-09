@@ -63,6 +63,25 @@ module TSC {
             }
             return false;
         }
+        public finUsed(){
+            for (const name of symbolTable){
+                if (name.used == false){
+                    return name.name;
+                }
+            }
+            return null
+        }
+
+        public finInit(){
+            for (const name of symbolTable){
+                if (name.init == false){
+                    return name.name;
+                }
+            }
+            return null
+        }
+
+
         public printSymbolTable(){
             for (const child of symbolTable) {
                 (<HTMLInputElement>document.getElementById("taOutput")).value += "  "+child.name + "          " + 
