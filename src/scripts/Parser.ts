@@ -102,7 +102,11 @@ module TSC {
     function parseBlock(){
         (<HTMLInputElement>document.getElementById("taOutput")).value += "  PARSER - | parseBlock() \n";
        _CST.addNode({name: "block", parent:_CST.getCurrentNode(), children: [], value: "block"});
+       if(_AST.getRootNode()==undefined){
        _AST.addNode({name: "block", parent:null, children: [], value: "block"});
+       }else{
+        _AST.addNode({name: "block", parent:_AST.getCurrentNode(), children: [], value: "block"});
+       }
         matchToken(TokenType.LCURLY);
         scope++;
         parseStatementList();
