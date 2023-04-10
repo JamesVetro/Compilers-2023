@@ -1,0 +1,9 @@
+For the next two sections, the concepts are simply too abstract, 
+and adding to the current code is just impossible for any kind of 
+theoretical approach. As such, I will be skipping ChatGPT usage for 
+the Semantic Analysis and Code Generation sections of the compiler 
+project. This was quite interesting, and to be honest, in the first
+two sections, I was quite surprised at the detail and accuracy that 
+ChatGPT was able to bring. However, it still clearly missed quite a 
+bit, and couldn't understand most of the more specific rules 
+provided.
