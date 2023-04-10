@@ -86,7 +86,7 @@ var TSC;
                 for (n < SymAnArray.length; n++;) {
                     document.getElementById("taOutput").value += SymAnArray[n];
                 }
-                document.getElementById("taOutput").value += "AST for Program " + progNum + ": \n";
+                document.getElementById("taOutput").value += "\n\nAST for Program " + progNum + ": \n";
                 _AST.printAST(_AST.getRootNode());
                 document.getElementById("taOutput").value += "AST Complete.\n\nSemantic Errors detected, no symbol table printed.";
                 SymAnArray = [];
@@ -109,11 +109,17 @@ var TSC;
     function parseBlock() {
         document.getElementById("taOutput").value += "  PARSER - | parseBlock() \n";
         _CST.addNode({ name: "block", parent: _CST.getCurrentNode(), children: [], value: "block" });
-        _AST.addNode({ name: "block", parent: null, children: [], value: "block" });
+        if (_AST.getRootNode() == undefined) {
+            _AST.addNode({ name: "block", parent: null, children: [], value: "block" });
+        }
+        else {
+            _AST.addNode({ name: "block", parent: _AST.getCurrentNode(), children: [], value: "block" });
+        }
         matchToken(TokenType.LCURLY);
         scope++;
         parseStatementList();
         matchToken(TokenType.RCURLY);
+        scope--;
         _AST.moveUp();
         _CST.moveUp();
     }

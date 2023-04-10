@@ -77,7 +77,7 @@ module TSC {
                 for(n < SymAnArray.length; n++;){
                     (<HTMLInputElement>document.getElementById("taOutput")).value += SymAnArray[n];
                 }
-                (<HTMLInputElement>document.getElementById("taOutput")).value += "AST for Program "+progNum+": \n";
+                (<HTMLInputElement>document.getElementById("taOutput")).value += "\n\nAST for Program "+progNum+": \n";
                 _AST.printAST(_AST.getRootNode());
                 (<HTMLInputElement>document.getElementById("taOutput")).value += "AST Complete.\n\nSemantic Errors detected, no symbol table printed.";
                 SymAnArray = [];
@@ -111,6 +111,7 @@ module TSC {
         scope++;
         parseStatementList();
         matchToken(TokenType.RCURLY);
+        scope--;
         _AST.moveUp();
        _CST.moveUp();
     }

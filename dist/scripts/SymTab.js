@@ -20,7 +20,7 @@ var TSC;
         SymTab.prototype.testScope = function (a, scope) {
             for (var _i = 0, symbolTable_2 = symbolTable; _i < symbolTable_2.length; _i++) {
                 var name_2 = symbolTable_2[_i];
-                if (name_2.name == a && name_2.Scope == scope) {
+                if (name_2.name == a && name_2.Scope <= scope) {
                     return true;
                 }
             }
@@ -29,7 +29,7 @@ var TSC;
         SymTab.prototype.isInit = function (a, scope) {
             for (var _i = 0, symbolTable_3 = symbolTable; _i < symbolTable_3.length; _i++) {
                 var name_3 = symbolTable_3[_i];
-                if (name_3.name == a && name_3.Scope == scope) {
+                if (name_3.name == a && name_3.Scope <= scope) {
                     name_3.init = true;
                     return true;
                 }
@@ -39,7 +39,7 @@ var TSC;
         SymTab.prototype.typeCheck = function (a, scope) {
             for (var _i = 0, symbolTable_4 = symbolTable; _i < symbolTable_4.length; _i++) {
                 var name_4 = symbolTable_4[_i];
-                if (name_4.name == a && name_4.Scope == scope) {
+                if (name_4.name == a && name_4.Scope <= scope) {
                     name_4.used = true;
                     return name_4.type;
                 }
@@ -49,7 +49,7 @@ var TSC;
         SymTab.prototype.isUsed = function (a, scope) {
             for (var _i = 0, symbolTable_5 = symbolTable; _i < symbolTable_5.length; _i++) {
                 var name_5 = symbolTable_5[_i];
-                if (name_5.name == a && name_5.Scope == scope) {
+                if (name_5.name == a && name_5.Scope <= scope) {
                     name_5.used = true;
                     return true;
                 }

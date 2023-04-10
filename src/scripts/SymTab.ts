@@ -27,7 +27,7 @@ module TSC {
         }
         public testScope (a: string, scope: number){
             for (const name of symbolTable){
-                if (name.name == a && name.Scope == scope){
+                if (name.name == a && name.Scope <= scope){
                     return true;
                 }
             }
@@ -36,7 +36,7 @@ module TSC {
 
         public isInit (a:string,scope:number):boolean{
             for (const name of symbolTable){
-                if (name.name == a && name.Scope == scope){
+                if (name.name == a && name.Scope <= scope){
                     name.init = true;
                     return true
                 }
@@ -46,7 +46,7 @@ module TSC {
 
         public typeCheck (a:string,scope:number):string{
             for (const name of symbolTable){
-                if (name.name == a && name.Scope == scope){
+                if (name.name == a && name.Scope <= scope){
                     name.used = true;
                     return name.type;
                 }
@@ -56,7 +56,7 @@ module TSC {
 
         public isUsed(a:string,scope:number):boolean{
             for (const name of symbolTable){
-                if (name.name == a && name.Scope == scope){
+                if (name.name == a && name.Scope <= scope){
                     name.used = true;
                     return true;
                 }
