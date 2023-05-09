@@ -2,18 +2,20 @@
 var TSC;
 (function (TSC) {
     //the actual token storage
-    var tokenList = [];
+    let tokenList = [];
     //not really used yet but I just feel like it might be useful to keep the tokens. 
-    var laterTokens = [];
-    var SymAnArray = [];
-    var parseError = 0;
-    var SymError = 0;
-    var SymWarning = 0;
-    var scope = 0;
-    var Parser = /** @class */ (function () {
-        function Parser() {
-        }
-        Parser.parse = function (inToken, tokenValue, lineNum, lexError, progNum) {
+    let laterTokens = [];
+    let SymAnArray = [];
+    let parseError = 0;
+    let SymError = 0;
+    let SymWarning = 0;
+    let scope = 0;
+    let memPointer = 0;
+    let stackIncrement = 0;
+    let varTable = [];
+    class Parser {
+        static parse(inToken, tokenValue, lineNum, lexError, progNum) {
+            initMem();
             if (inToken == TokenType.EOF) {
                 tokenList.push([inToken, tokenValue, lineNum]);
                 //Doesn't run parse or CST unless there are no lex errors. 
@@ -34,9 +36,8 @@ var TSC;
             else {
                 tokenList.push([inToken, tokenValue, lineNum]);
             }
-        };
-        return Parser;
-    }());
+        }
+    }
     TSC.Parser = Parser;
     function parseProgram(progNum) {
         document.getElementById("taOutput").value += "  PARSER - | parseProgram() \n";
@@ -50,21 +51,21 @@ var TSC;
             document.getElementById("taOutput").value += "CST for Program " + progNum + ": \n";
             _CST.printCST(_CST.getRootNode());
             document.getElementById("taOutput").value += "CST Complete.\n\n";
-            var test1 = _SymTab.finInit();
-            var test2 = _SymTab.finUsed();
+            let test1 = _SymTab.finInit();
+            let test2 = _SymTab.finUsed();
             if (test1 != null) {
-                var holder = "Semantic Error. Variable: " + test1 + " is created but never initialized.";
+                let holder = "Semantic Error. Variable: " + test1 + " is created but never initialized.";
                 SymError = SymError + 1;
                 SymAnArray.push(holder);
             }
             if (test2 != null) {
-                var holder = "Semantic Warning. Variable: " + test2 + " is created but never used.";
+                let holder = "Semantic Warning. Variable: " + test2 + " is created but never used.";
                 SymWarning = SymWarning + 1;
                 SymAnArray.push(holder);
             }
             if (SymError == 0) {
                 if (SymWarning != 0) {
-                    var n = -1;
+                    let n = -1;
                     for (n < SymAnArray.length; n++;) {
                         document.getElementById("taOutput").value += SymAnArray[n];
                     }
@@ -77,12 +78,14 @@ var TSC;
                 document.getElementById("taOutput").value += "AST Complete.\n\n";
                 document.getElementById("taOutput").value += "Program 1 Symbol Table \n-------------------------------------- \nName   Line   Scope   Type\n-------------------------------------\n";
                 _SymTab.printSymbolTable();
+                replaceT(memPointer);
+                displayMemory();
                 scope = 0;
                 SymAnArray = [];
                 SymWarning = 0;
             }
             else {
-                var n = -1;
+                let n = -1;
                 for (n < SymAnArray.length; n++;) {
                     document.getElementById("taOutput").value += SymAnArray[n];
                 }
@@ -104,6 +107,10 @@ var TSC;
             SymAnArray = [];
             scope = 0;
         }
+        memPointer = 0;
+        stackIncrement = 0;
+        varTable = [];
+        reset();
     }
     //the rest of the parse statements are fairly self explanatory, simply going down then back up the tree adding nodes and checking tokens.
     function parseBlock() {
@@ -173,10 +180,69 @@ var TSC;
         _CST.addNode({ name: "printStatement", parent: _CST.getCurrentNode(), children: [], value: "printStatement" });
         matchToken(TokenType.PRINT);
         matchToken(TokenType.LPAREN);
-        var holder = ASTExpr(0);
+        let holder = ASTExpr(0);
         if (holder[2] == true) {
             _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
             _AST.moveUp();
+        }
+        if (tokenList[0][0] == TokenType.VARIABLE) {
+            memPointer = write(memPointer, "A0");
+            let stackNum = "T" + _SymTab.testStack(tokenList[0][1].toString(), scope).toString();
+            memPointer = write(memPointer, "AC");
+            memPointer = write(memPointer, stackNum);
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "FF");
+        }
+        else if (tokenList[0][0] == TokenType.INTEGER) {
+            let int = "0" + tokenList[0][1].toString();
+            memPointer = write(memPointer, "AC");
+            memPointer = write(memPointer, int);
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "FF");
+        }
+        else if (tokenList[0][0] == TokenType.TRUE) {
+            memPointer = write(memPointer, "AC");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "FF");
+        }
+        else if (tokenList[0][0] == TokenType.FALSE) {
+            memPointer = write(memPointer, "AC");
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "FF");
+        }
+        else if (tokenList[0][0] == TokenType.QMARK) {
+            let inc = 1;
+            while (true) {
+                if (tokenList[inc][0] != TokenType.QMARK) {
+                    let int = tokenList[0][1].toString(16);
+                    memPointer = write(memPointer, "AC");
+                    memPointer = write(memPointer, int);
+                    memPointer = write(memPointer, "A2");
+                    memPointer = write(memPointer, "01");
+                    memPointer = write(memPointer, "FF");
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        else if (tokenList[0][0] == TokenType.LPAREN) {
+            let a = "00";
+            if (tokenList[1][1] == tokenList[3][1]) {
+                a = "01";
+            }
+            memPointer = write(memPointer, "AC");
+            memPointer = write(memPointer, a);
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "FF");
         }
         parseExpr();
         matchToken(TokenType.RPAREN);
@@ -187,36 +253,152 @@ var TSC;
         _CST.addNode({ name: "assignmentStatement", parent: _CST.getCurrentNode(), children: [], value: "assignmentStatement" });
         _AST.addNode({ name: "assignmentStatement", parent: _AST.getCurrentNode(), children: [], value: "assignmentStatement" });
         _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: tokenList[0][1] });
-        var symTest = _SymTab.isInit(tokenList[0][1].toString(), scope);
-        var namer = tokenList[0][1].toString();
+        let symTest = _SymTab.isInit(tokenList[0][1].toString(), scope);
+        let namer = tokenList[0][1].toString();
         matchToken(TokenType.VARIABLE);
         matchToken(TokenType.OPERATOR);
         _AST.addNode({ name: "VALUE", parent: _AST.getCurrentNode(), children: [], value: ASTExpr(0)[1].toString() });
         if (symTest == false) {
-            var holder = "Semantic warning on line: " + tokenList[0][2] + " Variable is assigned a value before declaration.";
+            let holder = "Semantic warning on line: " + tokenList[0][2] + " Variable is assigned a value before declaration.";
             SymWarning = SymWarning + 1;
             SymAnArray.push(holder);
             if (nextToken() == TokenType.INTEGER) {
-                _SymTab.addNode({ name: namer, type: "INT", Scope: scope, LineNum: tokenList[0][2], init: true, used: false });
+                _SymTab.addNode({ name: namer, type: "INT", Scope: scope, LineNum: tokenList[0][2], init: true, used: false, stackInc: stackIncrement });
+                memPointer = write(memPointer, "A9");
+                memPointer = write(memPointer, tokenList[0][1].toString(16));
+                memPointer = write(memPointer, "8D");
+                let tempString = "T" + stackIncrement;
+                stackIncrement++;
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
+                varTable.push([namer, scope, memPointer]);
+                stackIncrement++;
             }
             else if (nextToken() == TokenType.QMARK) {
-                _SymTab.addNode({ name: namer, type: "STRING", Scope: scope, LineNum: tokenList[0][2], init: true, used: false });
+                _SymTab.addNode({ name: namer, type: "STRING", Scope: scope, LineNum: tokenList[0][2], init: true, used: false, stackInc: stackIncrement });
+                memPointer = write(memPointer, "A9");
+                memPointer = write(memPointer, tokenList[1][1].toString(16));
+                memPointer = write(memPointer, "8D");
+                let tempString = "T" + stackIncrement;
+                stackIncrement++;
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
             }
             else if (nextToken() == TokenType.LPAREN || nextToken() == TokenType.TRUE || nextToken() == TokenType.FALSE) {
-                _SymTab.addNode({ name: namer, type: "BOOLEAN", Scope: scope, LineNum: tokenList[0][2], init: true, used: false });
+                _SymTab.addNode({ name: namer, type: "BOOLEAN", Scope: scope, LineNum: tokenList[0][2], init: true, used: false, stackInc: stackIncrement });
+                memPointer = write(memPointer, "A9");
+                let a = "00";
+                if (tokenList[0][1] = "true") {
+                    a = "01";
+                }
+                memPointer = write(memPointer, a);
+                memPointer = write(memPointer, "8D");
+                let tempString = "T" + stackIncrement;
+                stackIncrement++;
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
             }
             else if (nextToken() == TokenType.VARIABLE) {
                 if (_SymTab.typeCheck(tokenList[0][1].toString(), scope) != "NOPE") {
-                    _SymTab.addNode({ name: namer, type: _SymTab.typeCheck(tokenList[0][1].toString(), scope), Scope: scope, LineNum: tokenList[0][2], init: true, used: false });
+                    _SymTab.addNode({ name: namer, type: _SymTab.typeCheck(tokenList[0][1].toString(), scope), Scope: scope, LineNum: tokenList[0][2], init: true, used: false, stackInc: stackIncrement });
+                    memPointer = write(memPointer, "A9");
+                    memPointer = write(memPointer, tokenList[0][1].toString(16));
+                    memPointer = write(memPointer, "8D");
+                    let tempString = "T" + stackIncrement;
+                    stackIncrement++;
+                    memPointer = write(memPointer, tempString);
+                    memPointer = write(memPointer, "00");
                 }
                 else {
-                    var holder2 = "Semantic error on line: " + tokenList[0][2] + " Variable is not in scope.";
+                    let holder2 = "Semantic error on line: " + tokenList[0][2] + " Variable is not in scope.";
                     SymWarning = SymWarning + 1;
                     SymAnArray.push(holder2);
                 }
             }
         }
         else {
+            if (nextToken() == TokenType.INTEGER) {
+                memPointer = write(memPointer, "A9");
+                memPointer = write(memPointer, tokenList[0][1].toString(16));
+                memPointer = write(memPointer, "8D");
+                let tempString = "";
+                if (_SymTab.testScope(namer, scope)) {
+                    if (_SymTab.isInit(namer, scope)) {
+                        tempString = "T" + stackIncrement;
+                        stackIncrement++;
+                    }
+                    else {
+                        tempString = "T" + _SymTab.testStack(namer, scope).toString();
+                    }
+                }
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
+                varTable.push([namer, scope, memPointer]);
+            }
+            else if (nextToken() == TokenType.QMARK) {
+                _SymTab.addNode({ name: namer, type: "STRING", Scope: scope, LineNum: tokenList[0][2], init: true, used: false, stackInc: stackIncrement });
+                memPointer = write(memPointer, "A9");
+                memPointer = write(memPointer, tokenList[1][1].toString(16));
+                memPointer = write(memPointer, "8D");
+                let tempString = "";
+                if (_SymTab.testScope(namer, scope)) {
+                    if (_SymTab.isInit(namer, scope)) {
+                        tempString = "T" + stackIncrement;
+                        stackIncrement++;
+                    }
+                    else {
+                        tempString = "T" + _SymTab.testStack(namer, scope).toString();
+                    }
+                }
+                if (_SymTab.isInit(namer, scope)) {
+                    stackIncrement++;
+                }
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
+            }
+            else if (nextToken() == TokenType.LPAREN || nextToken() == TokenType.TRUE || nextToken() == TokenType.FALSE) {
+                memPointer = write(memPointer, "A9");
+                let a = "00";
+                if (nextToken() == TokenType.LPAREN) {
+                    if (tokenList[1][1] == tokenList[3][1]) {
+                        a = "01";
+                    }
+                }
+                if (tokenList[0][1] = "true") {
+                    a = "01";
+                }
+                memPointer = write(memPointer, a);
+                memPointer = write(memPointer, "8D");
+                let tempString = "";
+                if (_SymTab.testScope(namer, scope)) {
+                    if (_SymTab.isInit(namer, scope)) {
+                        tempString = "T" + stackIncrement;
+                        stackIncrement++;
+                    }
+                    else {
+                        tempString = "T" + _SymTab.testStack(namer, scope).toString();
+                    }
+                }
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
+            }
+            else if (nextToken() == TokenType.VARIABLE) {
+                memPointer = write(memPointer, "A9");
+                memPointer = write(memPointer, tokenList[0][1].toString(16));
+                memPointer = write(memPointer, "8D");
+                let tempString = "";
+                if (_SymTab.testScope(namer, scope)) {
+                    if (_SymTab.isInit(namer, scope)) {
+                        tempString = "T" + stackIncrement;
+                        stackIncrement++;
+                    }
+                    else {
+                        tempString = "T" + _SymTab.testStack(namer, scope).toString();
+                    }
+                }
+                memPointer = write(memPointer, tempString);
+                memPointer = write(memPointer, "00");
+            }
             _SymTab.isInit(namer, scope);
         }
         parseExpr();
@@ -229,12 +411,12 @@ var TSC;
         if (nextToken() == TokenType.INTEGER) {
             if (tokenList[num + 1][0] == TokenType.INTOP) {
                 num = num + 2;
-                var run = ASTExpr(num)[1].toString();
-                var numArr = ASTExpr(num);
+                let run = ASTExpr(num)[1].toString();
+                let numArr = ASTExpr(num);
                 num = numArr[2];
-                var boolExpr = numArr[3];
-                var holder1 = tokenList[num + 1][1].toString();
-                var holder2 = (holder1 + tokenList[1][1] + run[1]).toString();
+                let boolExpr = numArr[3];
+                let holder1 = tokenList[num + 1][1].toString();
+                let holder2 = (holder1 + tokenList[1][1] + run[1]).toString();
                 if (boolExpr == true) {
                     return ["INTEXPR", holder2, num, true];
                 }
@@ -247,16 +429,16 @@ var TSC;
             }
         }
         else if (nextToken() == TokenType.QMARK) {
-            var Holder = '"' + tokenList[1][1] + '"';
+            let Holder = '"' + tokenList[1][1] + '"';
             return ["STRINGEXPR", Holder, 3, false];
         }
         else if (nextToken() == TokenType.LPAREN) {
             num++;
-            var numArr = ASTExpr(num);
-            var run = numArr[1].toString();
+            let numArr = ASTExpr(num);
+            let run = numArr[1].toString();
             num = numArr[2];
-            var boolHold = numArr[3];
-            var holder = "{" + run;
+            let boolHold = numArr[3];
+            let holder = "{" + run;
             holder = holder + tokenList[num][1];
             num++;
             numArr = ASTExpr(num);
@@ -280,7 +462,7 @@ var TSC;
         document.getElementById("taOutput").value += "  PARSER - | parseVarDecl() \n";
         _CST.addNode({ name: "varDecl", parent: _CST.getCurrentNode(), children: [], value: "varDecl" });
         _AST.addNode({ name: "varDecl", parent: _AST.getCurrentNode(), children: [], value: "varDecl" });
-        var types = "";
+        let types = "";
         if (nextToken() == TokenType.INT) {
             matchToken(TokenType.INT);
             _AST.addNode({ name: "INT", parent: _AST.getCurrentNode(), children: [], value: "INT" });
@@ -301,12 +483,19 @@ var TSC;
         }
         _AST.addNode({ name: "VARIABLE", parent: _AST.getCurrentNode(), children: [], value: tokenList[0][1] });
         if (_SymTab.testScope(tokenList[0][1].toString(), scope)) {
-            var holder = "Semantic Error on line: " + tokenList[0][2] + " Redeclared variable in same scope";
+            let holder = "Semantic Error on line: " + tokenList[0][2] + " Redeclared variable in same scope";
             SymError = SymError + 1;
             SymAnArray.push(holder);
         }
         else {
-            _SymTab.addNode({ name: tokenList[0][1].toString(), type: types, Scope: scope, LineNum: tokenList[0][2], init: false, used: false });
+            _SymTab.addNode({ name: tokenList[0][1].toString(), type: types, Scope: scope, LineNum: tokenList[0][2], init: false, used: false, stackInc: stackIncrement });
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "8D");
+            let tempString = "T" + stackIncrement;
+            memPointer = write(memPointer, tempString);
+            memPointer = write(memPointer, "00");
+            stackIncrement++;
         }
         matchToken(TokenType.VARIABLE);
         _AST.moveUp();
@@ -316,26 +505,159 @@ var TSC;
     function parseWhileStatement() {
         document.getElementById("taOutput").value += "  PARSER - | parseWhileStatement() \n";
         _CST.addNode({ name: "whileStatement", parent: _CST.getCurrentNode(), children: [], value: "whileStatement" });
+        _AST.addNode({ name: "whileStatement", parent: _AST.getCurrentNode(), children: [], value: "whileStatement" });
         matchToken(TokenType.WHILE);
+        let memJumpHolder;
+        if (tokenList[0][0] == TokenType.TRUE) {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
+        else if (tokenList[0][0] == TokenType.FALSE) {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
+        else if (tokenList[1][1] == tokenList[3][1]) {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
+        else {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
         parseBooleanExpr();
         parseBlock();
+        let memJumploc = memPointer.toString(16);
+        write(memJumpHolder, memJumploc);
         _CST.moveUp();
+        _AST.moveUp();
     }
     function parseIfStatement() {
         document.getElementById("taOutput").value += "  PARSER - | parseIfStatement() \n";
         _CST.addNode({ name: "ifStatement", parent: _CST.getCurrentNode(), children: [], value: "ifStatement" });
+        _AST.addNode({ name: "ifStatement", parent: _AST.getCurrentNode(), children: [], value: "ifStatement" });
         matchToken(TokenType.IF);
+        let memJumpHolder;
+        if (tokenList[0][0] == TokenType.TRUE) {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
+        else if (tokenList[0][0] == TokenType.FALSE) {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
+        else if (tokenList[1][1] == tokenList[3][1]) {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
+        else {
+            memPointer = write(memPointer, "A2");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, "01");
+            memPointer = write(memPointer, "8D");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "00");
+            memPointer = write(memPointer, "EC");
+            memPointer = write(memPointer, "T" + stackIncrement.toString());
+            memPointer = write(memPointer, "D0");
+            memJumpHolder = memPointer;
+            memPointer++;
+        }
         parseBooleanExpr();
         parseBlock();
+        let memJumploc = memPointer.toString(16);
+        write(memJumpHolder, memJumploc);
         _CST.moveUp();
+        _AST.moveUp();
     }
     function parseBooleanExpr() {
         document.getElementById("taOutput").value += "  PARSER - | parseBooleanExpr() \n";
         _CST.addNode({ name: "booleanExpr", parent: _CST.getCurrentNode(), children: [], value: "booleanExpr" });
         if (nextToken() == TokenType.LPAREN) {
             matchToken(TokenType.LPAREN);
-            var holder = ASTExpr(0);
-            var TypeHolder = "";
+            let holder = ASTExpr(0);
+            let TypeHolder = "";
+            let a = "00";
+            if (tokenList[0][1] == tokenList[2][1]) {
+                a = "01";
+            }
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, a);
+            memPointer = write(memPointer, "8D");
+            let tempString = "T" + stackIncrement;
+            memPointer = write(memPointer, tempString);
+            memPointer = write(memPointer, "00");
+            stackIncrement++;
             if (holder[2] == true) {
                 _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
                 _AST.moveUp();
@@ -361,7 +683,7 @@ var TSC;
                 _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
                 _AST.moveUp();
             }
-            var TypeHolder2 = "";
+            let TypeHolder2 = "";
             if (nextToken() == TokenType.LPAREN || nextToken() == TokenType.TRUE || nextToken() == TokenType.FALSE) {
                 TypeHolder2 = "BOOLEAN";
             }
@@ -377,9 +699,9 @@ var TSC;
                 }
             }
             if (TypeHolder != TypeHolder2) {
-                var holder_1 = "Semantic Error on line: " + tokenList[0][2] + " " + TypeHolder + "-type expression compared to " + TypeHolder2 + "-type expression.";
+                let holder = "Semantic Error on line: " + tokenList[0][2] + " " + TypeHolder + "-type expression compared to " + TypeHolder2 + "-type expression.";
                 SymError = SymError + 1;
-                SymAnArray.push(holder_1);
+                SymAnArray.push(holder);
             }
             parseExpr();
             matchToken(TokenType.RPAREN);
@@ -408,9 +730,9 @@ var TSC;
             _CST.moveUp();
         }
         else if (nextToken() == TokenType.VARIABLE) {
-            var test = _SymTab.isUsed(tokenList[0][1].toString(), scope);
+            let test = _SymTab.isUsed(tokenList[0][1].toString(), scope);
             if (test == false) {
-                var holder = "Semantic Error on line: " + tokenList[0][2] + " Variable not declared or initialized in scope.";
+                let holder = "Semantic Error on line: " + tokenList[0][2] + " Variable not declared or initialized in scope.";
                 SymError = SymError + 1;
                 SymAnArray.push(holder);
             }
@@ -432,31 +754,47 @@ var TSC;
         matchToken(TokenType.QMARK);
         _CST.moveUp();
     }
-    function parseIntExpr() {
+    function parseIntExpr(x) {
         document.getElementById("taOutput").value += "  PARSER - | parseIntExpr() \n";
         _CST.addNode({ name: "intExpr", parent: _CST.getCurrentNode(), children: [], value: "intExpr" });
+        let integ;
+        if (x = 1) {
+            integ = "00";
+        }
+        else {
+            integ = "0" + tokenList[0][1].toString();
+        }
         matchToken(TokenType.INTEGER);
         if (tokenList[0][0] == TokenType.INTOP) {
             matchToken(TokenType.INTOP);
             intExprSemAnalysis();
-            var holder = ASTExpr(0);
+            let holder = ASTExpr(0);
             if (holder[2] == true) {
                 _AST.addNode({ name: holder[1].toString(), parent: _AST.getCurrentNode(), children: [], value: holder[1].toString() });
                 _AST.moveUp();
             }
             if (nextToken() == TokenType.INTEGER) {
-                parseIntExpr();
+                parseIntExpr(1);
             }
             else if (nextToken() == TokenType.VARIABLE) {
                 if (_SymTab.typeCheck(tokenList[0][1].toString(), scope) == "INT") {
                     parseExpr();
                 }
                 else {
-                    var holder_2 = "Semantic Error on line: " + tokenList[0][2] + " Non-INT variable used in INT expression.";
+                    let holder = "Semantic Error on line: " + tokenList[0][2] + " Non-INT variable used in INT expression.";
                     SymError = SymError + 1;
-                    SymAnArray.push(holder_2);
+                    SymAnArray.push(holder);
                 }
             }
+        }
+        else {
+            memPointer = write(memPointer, "A9");
+            memPointer = write(memPointer, integ);
+            memPointer = write(memPointer, "8D");
+            let tempString = "T" + stackIncrement;
+            memPointer = write(memPointer, tempString);
+            memPointer = write(memPointer, "00");
+            stackIncrement++;
         }
         _CST.moveUp();
     }
@@ -468,12 +806,12 @@ var TSC;
             //No error, no code needed
         }
         else if (tokenList[0][0] == TokenType.QMARK) {
-            var holder = "Semantic Error on line: " + tokenList[0][2] + " Expected a intExpr or variable, instead got string expr";
+            let holder = "Semantic Error on line: " + tokenList[0][2] + " Expected a intExpr or variable, instead got string expr";
             SymError = SymError + 1;
             SymAnArray.push(holder);
         }
         else if (tokenList[0][0] == TokenType.LPAREN) {
-            var holder = "Semantic Error on line: " + tokenList[0][2] + " Expected a intExpr or variable, instead found a boolean expr or block statement";
+            let holder = "Semantic Error on line: " + tokenList[0][2] + " Expected a intExpr or variable, instead found a boolean expr or block statement";
             SymError = SymError + 1;
             SymAnArray.push(holder);
         }
@@ -484,7 +822,7 @@ var TSC;
     /*figured I'd do this for simplicity's sake so code is more readable.
     Doesn't actually do anything to be honest, could replace nexttoken anywhere with "tokenList[0][0]"*/
     function nextToken() {
-        var nextToken = tokenList[0][0];
+        let nextToken = tokenList[0][0];
         return nextToken;
     }
     //basic match function 
@@ -501,6 +839,56 @@ var TSC;
             document.getElementById("taOutput").value += "  PARSER ERROR - | Expected: " + checkValue + ", and instead got: " + tokenList[0][0] + " With value: '" + tokenList[0][1] + "' On line: " + tokenList[0][2];
             laterTokens.push(tokenList[0]);
             tokenList.shift();
+        }
+    }
+    let hexArray = [];
+    // Size of addressable memory.
+    let memSize = 0xFF;
+    // Initializes the array, and then fills with 0x00.
+    function initMem() {
+        hexArray = new Array(memSize);
+        for (let i = 0; i < memSize; i++) {
+            hexArray[i] = "00";
+        }
+    }
+    // Displays content of memory (0x00 to 0x14)
+    function displayMemory() {
+        document.getElementById("taOutput2").value += "\n Displaying Memory for Program. \n";
+        for (let i = 0x00; i <= memSize; i++) {
+            document.getElementById("taOutput2").value += hexArray[i] + " ";
+        }
+        document.getElementById("taOutput2").value += "\n Memory Dump Complete. \n \n";
+    }
+    // Getter for the Memory
+    function getMemoryArr() {
+        return hexArray;
+    }
+    // Setter for Memory array
+    function setMemoryArr(hexArray) {
+        hexArray = hexArray;
+    }
+    //Write the contents of the MDR to memory
+    function write(i, data) {
+        hexArray[i] = data;
+        i++;
+        return i;
+    }
+    // Resets all values in the Memory and MAR+MDR with 0x00
+    function reset() {
+        let memArr = getMemoryArr();
+        for (let i = 0x00; i < memArr.length; i++) {
+            memArr[i] = "00";
+        }
+        setMemoryArr(memArr);
+    }
+    function replaceT(last) {
+        let memArr = getMemoryArr();
+        for (let i = 0x00; i < memArr.length; i++) {
+            let x = memArr[i];
+            if (x.charAt(0) == "T") {
+                last = last + parseInt(x.charAt(1));
+                write(i, last.toString());
+            }
         }
     }
 })(TSC || (TSC = {}));

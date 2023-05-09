@@ -1,18 +1,16 @@
 "use strict";
 var TSC;
 (function (TSC) {
-    var rootNode;
-    var currNode;
-    var AST = /** @class */ (function () {
-        function AST() {
-        }
-        AST.prototype.moveUp = function () {
+    let rootNode;
+    let currNode;
+    class AST {
+        moveUp() {
             if (currNode.parent !== null) {
                 currNode = currNode.parent;
             }
-        };
+        }
         //Adds nodes to the tree
-        AST.prototype.addNode = function (node) {
+        addNode(node) {
             if (node.parent == null) {
                 node.name = "program";
                 node.parent = null;
@@ -27,23 +25,20 @@ var TSC;
             if (node.name != typeof TokenType) {
                 currNode = node;
             }
-        };
-        AST.prototype.getCurrentNode = function () {
+        }
+        getCurrentNode() {
             return currNode;
-        };
-        AST.prototype.getRootNode = function () {
+        }
+        getRootNode() {
             return rootNode;
-        };
+        }
         //prints the final ast, adding "-"" for each child
-        AST.prototype.printAST = function (node, indent) {
-            if (indent === void 0) { indent = ""; }
+        printAST(node, indent = "") {
             document.getElementById("taOutput").value += "  AST --> | " + indent + "<" + node.value + ">" + "\n";
-            for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
-                var child = _a[_i];
+            for (const child of node.children) {
                 this.printAST(child, indent + "-");
             }
-        };
-        return AST;
-    }());
+        }
+    }
     TSC.AST = AST;
 })(TSC || (TSC = {}));

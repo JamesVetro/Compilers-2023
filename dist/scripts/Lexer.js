@@ -1,17 +1,15 @@
 "use strict";
 var TSC;
 (function (TSC) {
-    var Lexer = /** @class */ (function () {
-        function Lexer() {
-        }
-        Lexer.lex = function () {
+    class Lexer {
+        static lex() {
             {
                 var sourceCode = document.getElementById("taSourceCode").value;
-                var lexer = new Lexers(sourceCode);
+                const lexer = new Lexers(sourceCode);
                 document.getElementById("taOutput").value += "Lexing program " + 1 + "\n";
-                var token = lexer.getNextToken();
+                let token = lexer.getNextToken();
                 while (token.value !== "null") {
-                    var checker = token.value;
+                    let checker = token.value;
                     if (token.value != "$") {
                         document.getElementById("taOutput").value += "  LEXER - | " + token.type + " { " + token.value + " } FOUND AT POSITION: " + token.pos + " IN LINE:  " + token.line + "\n";
                         TSC.Parser.parse(token.type, token.value, token.line, token.errorNum, token.progNum);
@@ -30,12 +28,11 @@ var TSC;
                 }
                 return sourceCode;
             }
-        };
-        return Lexer;
-    }());
+        }
+    }
     TSC.Lexer = Lexer;
-    var Token = /** @class */ (function () {
-        function Token(type, value, pos, line, errorNum, progNum) {
+    class Token {
+        constructor(type, value, pos, line, errorNum, progNum) {
             this.type = type;
             this.value = value;
             this.pos = pos;
@@ -43,10 +40,9 @@ var TSC;
             this.errorNum = errorNum;
             this.line = line;
         }
-        return Token;
-    }());
-    var Lexers = /** @class */ (function () {
-        function Lexers(text) {
+    }
+    class Lexers {
+        constructor(text) {
             this.text = text;
             this.pos = 0;
             this.errorNum = 0;
@@ -55,7 +51,7 @@ var TSC;
             this.currentChar = this.text.charAt(this.pos);
             this.line = 0;
         }
-        Lexers.prototype.advance = function () {
+        advance() {
             this.pos += 1;
             this.linePos++;
             if (this.pos > this.text.length - 1) {
@@ -64,23 +60,23 @@ var TSC;
             else {
                 this.currentChar = this.text.charAt(this.pos);
             }
-        };
-        Lexers.prototype.skipWhitespace = function () {
+        }
+        skipWhitespace() {
             while (this.currentChar !== "" && this.currentChar === ' ') {
                 this.advance();
                 this.linePos--;
             }
-        };
-        Lexers.prototype.isAlpha = function (ch) {
+        }
+        isAlpha(ch) {
             return /([a-z])+/g.test(ch);
-        };
-        Lexers.prototype.isDigit = function (ch) {
+        }
+        isDigit(ch) {
             return /^\d$/.test(ch);
-        };
-        Lexers.prototype.AlphaSplitter = function (Block) {
+        }
+        AlphaSplitter(Block) {
             Block = Block.toLowerCase();
             while (true) {
-                var LockUp = Block.charAt(0);
+                let LockUp = Block.charAt(0);
                 if (LockUp == "") {
                     break;
                 }
@@ -155,16 +151,16 @@ var TSC;
                     LockUp = "";
                 }
             }
-        };
-        Lexers.prototype.getNextToken = function () {
-            var stop = false;
+        }
+        getNextToken() {
+            let stop = false;
             while (this.currentChar !== "") {
                 if (this.currentChar === ' ') { //skipping whitespace
                     this.skipWhitespace();
                     continue;
                 }
                 if (this.isAlpha(this.currentChar)) { //alphabetical character collection
-                    var result = '';
+                    let result = '';
                     while (this.isAlpha(this.currentChar)) {
                         result += this.currentChar;
                         this.advance();
@@ -173,7 +169,7 @@ var TSC;
                     continue;
                 }
                 if (this.isDigit(this.currentChar)) { //numeric checker
-                    var result = '';
+                    let result = '';
                     while (this.isDigit(this.currentChar)) {
                         result += this.currentChar;
                         this.advance();
@@ -181,7 +177,7 @@ var TSC;
                     return new Token(TokenType.INTEGER, parseInt(result), this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '=') { //equals or double equals
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.advance();
                     if (this.currentChar === '=') {
                         result += this.currentChar;
@@ -191,7 +187,7 @@ var TSC;
                     return new Token(TokenType.OPERATOR, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '!') { // not equals sign
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.pos += 1;
                     if (this.pos > this.text.length - 1) {
                         this.currentChar = "";
@@ -208,32 +204,32 @@ var TSC;
                     return new Token(TokenType.ERROR, result, this.linePos, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '(') { //parentheses checking
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.advance();
                     return new Token(TokenType.LPAREN, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === ')') { //parentheses checking
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.advance();
                     return new Token(TokenType.RPAREN, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '{') { //curly bracket checking
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.advance();
                     return new Token(TokenType.LCURLY, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '}') { //curly bracket checking
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.advance();
                     return new Token(TokenType.RCURLY, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '+') { //addition operator
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.advance();
                     return new Token(TokenType.INTOP, result, this.linePos - result.length, this.line, this.errorNum, this.progNum);
                 }
                 if (this.currentChar === '/') { //comment checking
-                    var result = this.currentChar;
+                    let result = this.currentChar;
                     this.pos += 1;
                     if (this.pos > this.text.length - 1) {
                         this.currentChar = "";
@@ -250,7 +246,7 @@ var TSC;
                         else {
                             this.currentChar = this.text.charAt(this.pos);
                         }
-                        var comment = '';
+                        let comment = '';
                         while (this.currentChar !== "" && !(this.currentChar === '*' && this.text.charAt(this.pos + 1) === '/')) {
                             comment += this.currentChar;
                             this.advance();
@@ -283,7 +279,7 @@ var TSC;
                     else {
                         this.currentChar = this.text.charAt(this.pos);
                     }
-                    var quoteString = "";
+                    let quoteString = "";
                     stop = false;
                     while (this.currentChar !== "" && this.currentChar !== '"') { //end quote checking
                         if (this.currentChar === ' ') {
@@ -390,7 +386,7 @@ var TSC;
                     return new Token(TokenType.EOF, "$", this.linePos, this.line, this.errorNum, this.progNum);
                 }
                 else { //if it's other than these symbols it's an error
-                    var errorval = this.currentChar;
+                    let errorval = this.currentChar;
                     this.advance();
                     this.errorNum++;
                     return new Token(TokenType.ERROR, errorval, this.linePos, this.line, this.errorNum, this.progNum);
@@ -398,7 +394,6 @@ var TSC;
             }
             //returns null 
             return new Token(TokenType.NULL, "null", this.linePos, this.line, this.errorNum, this.progNum);
-        };
-        return Lexers;
-    }());
+        }
+    }
 })(TSC || (TSC = {}));

@@ -6,6 +6,7 @@ module TSC {
         LineNum: string | number;
         init:boolean;
         used:boolean;
+        stackInc:number;
     }
 
     let symbolTable: SymTabNode[] = [];
@@ -24,6 +25,14 @@ module TSC {
                 }
             }
             return false;
+        }
+        public testStack (a: string, scope:number){
+            for (const name of symbolTable){
+                if (name.name == a && name.Scope == scope){
+                    return name.stackInc;
+                }
+            }
+            return -1;
         }
         public testScope (a: string, scope: number){
             for (const name of symbolTable){

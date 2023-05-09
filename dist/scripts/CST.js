@@ -1,18 +1,16 @@
 "use strict";
 var TSC;
 (function (TSC) {
-    var rootNode;
-    var currNode;
-    var CST = /** @class */ (function () {
-        function CST() {
-        }
-        CST.prototype.moveUp = function () {
+    let rootNode;
+    let currNode;
+    class CST {
+        moveUp() {
             if (currNode.parent !== null) {
                 currNode = currNode.parent;
             }
-        };
+        }
         //Adds nodes to the tree
-        CST.prototype.addNode = function (node) {
+        addNode(node) {
             if (node.parent == null) {
                 node.name = "program";
                 node.parent = null;
@@ -27,23 +25,20 @@ var TSC;
             if (node.name != typeof TokenType) {
                 currNode = node;
             }
-        };
-        CST.prototype.getCurrentNode = function () {
+        }
+        getCurrentNode() {
             return currNode;
-        };
-        CST.prototype.getRootNode = function () {
+        }
+        getRootNode() {
             return rootNode;
-        };
+        }
         //prints the final cst, adding "-"" for each child
-        CST.prototype.printCST = function (node, indent) {
-            if (indent === void 0) { indent = ""; }
+        printCST(node, indent = "") {
             document.getElementById("taOutput").value += "  CST --> | " + indent + "<" + node.value + ">" + "\n";
-            for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
-                var child = _a[_i];
+            for (const child of node.children) {
                 this.printCST(child, indent + "-");
             }
-        };
-        return CST;
-    }());
+        }
+    }
     TSC.CST = CST;
 })(TSC || (TSC = {}));

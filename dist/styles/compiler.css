@@ -46,8 +46,15 @@ h1{
 #taSourceCode, #taOutput{
 	width:48%;
 	margin: 10px;
-	height:400px;
+	height:350px;
 }
 #taOutput{
 	float:right;
+}
+#taOutput2{
+	float:center;
+	margin-left: 40px;
+	margin-right: 40px;
+	width:95%;
+	height: 200px;
 }

@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="dist/styles/bootstrap.min.css">
 </head>
 <body onload="init();">
-    <h1>James Vetro's Project 3</h1>
+    <h1>James Vetro's Project 4</h1>
     <hr>
-    <p><em>A simple Lexer and Parser, now with Semantic Analysis embedded.</em></p>
+    <p><em>A Complete Compiler.</em></p>
 
 	 <pre>
 This google doc has various test cases to try: https://docs.google.com/document/d/13lfY-vzVWwBsgnNV49eNbqzret1Mp4_nHhbe0wDoLj8/edit?usp=sharing
@@ -26,7 +26,11 @@ This google doc has various test cases to try: https://docs.google.com/document/
             <textarea id="taOutput"></textarea>
         </div>        
     </div>
-
+	<div>
+        <div class="source">
+            <textarea id="taOutput2"></textarea>
+        </div>        
+    </div>
 	<pre>
 		Made by James Vetro https://github.com/JamesVetro
 			 </pre>
@@ -43,6 +47,7 @@ This google doc has various test cases to try: https://docs.google.com/document/
 		 function init() {
 	        // Clear the message box.
 	        document.getElementById("taOutput").value = "";
+			document.getElementById("taOutput2").value = "";
 	        // Set the initial values for our globals.
 	        tokens = "";
 	        tokenIndex = 0;
@@ -62,6 +67,7 @@ This google doc has various test cases to try: https://docs.google.com/document/
 		function btnReset_click(){
 			(document.getElementById("taOutput")).value = "";
 			(document.getElementById("taSourceCode")).value = "";
+			(document.getElementById("taOutput2")).value = "";
 		}
 		function putMessage(msg) {
 	        document.getElementById("taOutput").value += msg + "\n";
